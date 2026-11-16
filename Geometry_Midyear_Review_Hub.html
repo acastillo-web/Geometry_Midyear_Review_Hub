@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Geometry Midyear Review Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F7F2; --grid:#DCE4E1; --ink:#1B2530; --muted:#4F5B68; --line:#AEBBB8; --white:#fff;
+  --c1:#0E7C86; --c2:#8A3FA0; --c3:#A85F00; --c4:#2B5BD7;
+  --ok:#17693A; --okbg:#E6F4EA; --bad:#A8231B; --badbg:#FBE9E7; --hl:#FFE9A8;
+  --head:"Bricolage Grotesque","Trebuchet MS","Segoe UI",sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI","Cambria Math",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:var(--body);font-size:18px;line-height:1.5;color:var(--ink);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1,h2,h3{font-family:var(--head);line-height:1.1;margin:0}
+h1{font-size:clamp(2.2rem,7vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.5rem;font-weight:800}
+h3{font-size:1.2rem;font-weight:600}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--c4);outline-offset:2px}
+.sheet{background:var(--white);border:2px solid var(--ink);border-radius:4px;padding:18px;margin-top:18px}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+
+/* Title block (drafting-sheet style) */
+.titleblock{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;border:2px solid var(--ink);background:var(--white);margin-top:16px}
+.titleblock>div{padding:8px 12px;border-right:2px solid var(--ink);min-width:0}
+.titleblock>div:last-child{border-right:0}
+.titleblock .k{font-size:.78rem;color:var(--muted)}
+.titleblock .v{font-family:var(--head);font-weight:800;font-size:1.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:620px){.titleblock{grid-template-columns:1fr 1fr}.titleblock>div:nth-child(2){border-right:0}.titleblock>div:nth-child(-n+2){border-bottom:2px solid var(--ink)}}
+
+/* Buttons */
+.primary{background:var(--ink);color:#fff;border:2px solid var(--ink);border-radius:4px;padding:10px 18px;font-weight:700}
+.primary:hover{background:#2c3a49}
+.primary[disabled]{background:#9aa5a2;border-color:#9aa5a2;cursor:not-allowed}
+.ghost{background:var(--white);border:2px solid var(--ink);border-radius:4px;padding:8px 14px;font-weight:700}
+.ghost:hover{background:var(--hl)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Level picker */
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.lv{background:var(--white);border:2px solid var(--line);border-radius:4px;padding:10px;text-align:left}
+.lv b{display:block;font-family:var(--head)}
+.lv[aria-pressed="true"]{border-color:var(--ink);background:var(--hl);box-shadow:inset 0 0 0 1px var(--ink)}
+@media(max-width:620px){.levels{grid-template-columns:1fr}}
+
+/* Zones */
+.zone{border:2px solid var(--ink);border-left:12px solid var(--cc);background:var(--white);padding:14px 16px;margin-top:14px;border-radius:4px}
+.zone h3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.zone .state{font-size:.9rem;font-weight:700}
+.ruler{height:26px;border:2px solid var(--ink);background:var(--white);position:relative;margin:10px 0;overflow:hidden}
+.ruler .fill{position:absolute;inset:0 auto 0 0;background:var(--cc);opacity:.85;width:0}
+.ruler .ticks{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9.2%,var(--ink) 9.2% 10%);opacity:.55;
+  -webkit-mask:linear-gradient(#000 0 0);}
+.ruler .ticks::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 4.4%,rgba(27,37,48,.55) 4.4% 5%);-webkit-mask:linear-gradient(transparent 55%,#000 55%);mask:linear-gradient(transparent 55%,#000 55%)}
+details{margin-top:10px}
+summary{cursor:pointer;font-weight:700}
+details ul{margin:8px 0 0;padding-left:22px}
+details li{margin:4px 0}
+.boss{border-left-color:var(--ink);background:#EEF1EF}
+
+/* Quiz */
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.bar{height:14px;border:2px solid var(--ink);background:#fff;flex:1;min-width:120px}
+.bar>i{display:block;height:100%;background:var(--ink)}
+.tag{display:inline-block;font-weight:700;border-bottom:4px solid var(--cc);margin:0 0 10px}
+.qtext{font-size:1.2rem;margin:0 0 12px}
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;background:var(--white);border:2px solid var(--ink);border-radius:4px;padding:10px 12px;min-height:50px}
+.opt:hover:not([disabled]){background:var(--hl)}
+.opt .ltr{flex:none;width:30px;height:30px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.95rem}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad)}
+.opt .mark{margin-left:auto;font-weight:700}
+.opt[disabled]{cursor:default}
+.hintbox p{margin:6px 0;padding:8px 12px;background:var(--hl);border-left:6px solid #C9A100}
+.fb{padding:12px 14px;border:2px solid;border-radius:4px;margin:12px 0}
+.fb.ok{background:var(--okbg);border-color:var(--ok)}
+.fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb p{margin:6px 0 0}
+svg.fig{max-width:340px;width:100%;height:auto;display:block;margin:6px 0;border:1px dashed var(--line);background:#fff}
+svg.fig text{font-family:var(--body);font-size:13px;fill:var(--ink)}
+svg.fig .hlc{fill:var(--hl);stroke:var(--ink);stroke-width:1}
+svg.fig .hlt{font-weight:700}
+
+/* Results */
+.big{font-family:var(--head);font-weight:800;font-size:3.2rem;line-height:1}
+.list{padding-left:22px}
+.lb table{width:100%;border-collapse:collapse}
+.lb td,.lb th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.toast{background:var(--hl);border:2px solid var(--ink);padding:8px 12px;margin:10px 0;border-radius:4px;font-weight:700}
+input[type=text],select{font:inherit;padding:10px 12px;border:2px solid var(--ink);border-radius:4px;background:#fff;width:100%}
+label.f{display:block;margin-top:12px;font-weight:700}
+@media(prefers-reduced-motion:no-preference){.ruler .fill{transition:width .6s ease}}
+@media print{body{background:#fff}.ghost,.primary{display:none}}
+</style>
+</head>
+<body>
+<main>
+
+<!-- WELCOME -->
+<section id="welcome" hidden>
+  <h1>Geometry Midyear Review</h1>
+  <p class="muted" style="margin:10px 0 0">Chapters 1 to 4, built for studying at home over break. Enter your name to save your progress on this device.</p>
+  <div class="sheet">
+    <label class="f" for="nm" style="margin-top:0">Your name</label>
+    <input type="text" id="nm" autocomplete="off" maxlength="30">
+    <label class="f" for="pd">Your class period</label>
+    <select id="pd"><option value="">Choose a period</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select>
+    <p id="welcomeErr" class="small" style="color:var(--bad);font-weight:700;margin:10px 0 0" role="alert"></p>
+    <div class="row" style="margin-top:14px"><button class="primary" data-act="start">Open the hub</button></div>
+  </div>
+</section>
+
+<!-- HOME -->
+<section id="home" hidden></section>
+
+<!-- QUIZ -->
+<section id="quiz" hidden>
+  <div class="qtop">
+    <button class="ghost" data-act="leave">Leave practice</button>
+    <div class="bar" aria-hidden="true"><i id="qbar" style="width:0"></i></div>
+    <div id="qprog" class="small" style="font-weight:700"></div>
+  </div>
+  <div id="leaveBox" class="toast" hidden role="alertdialog" aria-label="Leave practice">
+    <p style="margin:0 0 8px">Leave this practice round? Your answers so far are saved, but the round will not count toward clearing a zone.</p>
+    <div class="row"><button class="primary" data-act="leaveYes">Yes, leave</button><button class="ghost" data-act="leaveNo">Keep going</button></div>
+  </div>
+  <article class="sheet" id="qcard"></article>
+</section>
+
+<!-- RESULT -->
+<section id="result" hidden></section>
+
+</main>
+
+<script>
+/*GEN-START*/
+const CONFIG={SCRIPT_URL:"",TEST_NAME:"Midyear Assessment"};
+
+/* ---------- helpers ---------- */
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[R(0,a.length-1)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const nz=(a,b)=>{let v;do{v=R(a,b)}while(v===0);return v};
+const sg=n=>n<0?"\u2212"+Math.abs(n):String(n);
+const P=(x,y)=>"("+sg(x)+", "+sg(y)+")";
+const PA=a=>P(a[0],a[1]);
+const V=(a,b)=>"\u27E8"+sg(a)+", "+sg(b)+"\u27E9";
+function fr(n,d){if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;n/=g;d/=g;return d===1?sg(n):sg(n)+"/"+d}
+function eq(num,den,b){ // y = (num/den)x + b
+  if(den<0){num=-num;den=-den}const g=gcd(num,den)||1;num/=g;den/=g;
+  let s;if(den===1){s=num===1?"x":num===-1?"\u2212x":sg(num)+"x"}
+  else{s=(num<0?"\u2212":"")+"("+Math.abs(num)+"/"+den+")x"}
+  return "y = "+s+(b===0?"":b>0?" + "+b:" \u2212 "+Math.abs(b));
+}
+const nw=(c,l)=>{const s=[];[...l,c+1,c-1,c+2,c-2,c+3,c+10].forEach(v=>{if(v!==c&&!s.includes(v)&&(v>0||c<=0))s.push(v)});return s.slice(0,3)};
+const rp=()=>{let x,y;do{x=nz(-7,7);y=nz(-7,7)}while(Math.abs(x)===Math.abs(y));return [x,y]};
+
+function Q(o){
+  const u=o.unit||"",c=String(o.correct)+u;
+  const w=[...new Set(o.wrongs.map(v=>String(v)+u))].filter(v=>v!==c).slice(0,3);
+  const opts=o.keep?o.opts:shuffle([c,...w]);
+  return {skill:o.skill,q:o.q,fig:o.fig||"",opts,ans:opts.indexOf(c),hints:o.hints||[],sol:o.sol||"",ch:0};
+}
+function stat(skill,d,items){
+  return {skill,d,f(){const it=pick(items);const fg=it[5]?(typeof it[5]==="function"?it[5]():it[5]):"";return Q({skill,fig:fg,q:it[0],correct:it[1],wrongs:it[2],hints:[it[3]],sol:it[4]||it[3]})}};
+}
+
+/* ---------- figure helpers ---------- */
+let _cp=0;
+const INK="#1B2530",BLUE="#2B5BD7",ORG="#B8530B",TEAL="#0E7C86",MUTE="#55616E";
+const f1=n=>Math.round(n*10)/10;
+const svgw=(w,h,body,label)=>'<svg class="fig" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+(label||"Diagram for the question")+'"><defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="'+INK+'"/></marker><marker id="arrb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="'+BLUE+'"/></marker></defs>'+body+'</svg>';
+const tx=(x,y,t,o)=>{o=o||{};return '<text x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+(o.a||"middle")+'" style="paint-order:stroke;stroke:#fff;stroke-width:3px;fill:'+(o.c||INK)+(o.s?';font-size:'+o.s+'px':'')+(o.w?';font-weight:'+o.w:'')+'">'+t+'</text>'};
+const ln=(x1,y1,x2,y2,o)=>{o=o||{};return '<line x1="'+f1(x1)+'" y1="'+f1(y1)+'" x2="'+f1(x2)+'" y2="'+f1(y2)+'" stroke="'+(o.c||INK)+'" stroke-width="'+(o.w||2)+'"'+(o.d?' stroke-dasharray="6 4"':'')+(o.m?' marker-end="url(#'+o.m+')"':'')+'/>'};
+const dot=(x,y,c,r)=>'<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+(r||4)+'" fill="'+(c||INK)+'"/>';
+const poly=(p,o)=>{o=o||{};return '<polygon points="'+p.map(q=>f1(q[0])+","+f1(q[1])).join(" ")+'" fill="'+(o.f||"none")+'" stroke="'+(o.c||INK)+'" stroke-width="'+(o.w||2)+'"'+(o.d?' stroke-dasharray="5 3"':'')+'/>'};
+const box=(x,y,w,h,lines,o)=>{o=o||{};let s='<rect x="'+f1(x)+'" y="'+y+'" width="'+f1(w)+'" height="'+h+'" rx="4" fill="'+(o.f||"#fff")+'" stroke="'+(o.c||INK)+'" stroke-width="2"/>';const L=String(lines).split("\n"),lh=15,y0=y+h/2-(L.length-1)*lh/2+4.5;L.forEach((t,i)=>{s+=tx(x+w/2,y0+i*lh,t,{s:o.s||13,w:o.w})});return s};
+
+/* ---------- coordinate plane ---------- */
+function plane(o){
+  o=o||{};const pts=o.pts||[],segs=o.segs||[],polys=o.polys||[],lines=o.lines||[],paths=o.paths||[],texts=o.texts||[];
+  const all=[[0,0]];
+  pts.forEach(p=>all.push(p.p));segs.forEach(s=>all.push(s[0],s[1]));polys.forEach(pl=>pl.pts.forEach(q=>all.push(q)));
+  lines.forEach(l=>all.push(l.a,l.b));paths.forEach(p=>p.pts.forEach(q=>all.push(q)));texts.forEach(t=>all.push(t.p));
+  const xa=all.map(q=>q[0]),ya=all.map(q=>q[1]);
+  let x0=Math.min(...xa)-1,x1=Math.max(...xa)+1,y0=Math.min(...ya)-1,y1=Math.max(...ya)+1;
+  let span=Math.max(x1-x0,y1-y0,8);const cx=(x0+x1)/2,cy=(y0+y1)/2;
+  x0=Math.floor(cx-span/2);y0=Math.floor(cy-span/2);span+=1;
+  if(o.view){x0=o.view[0];y0=o.view[2];span=o.view[1]-o.view[0]}
+  x1=x0+span;y1=y0+span;
+  const W=300,m=24,sc=(W-2*m)/span,X=x=>m+(x-x0)*sc,Y=y=>W-m-(y-y0)*sc;
+  const clip="cp"+(++_cp),step=span>20?2:1,tl=span<=10?1:span<=20?2:5;
+  let g="",lab="";
+  for(let i=Math.ceil(x0/step)*step;i<=x1;i+=step)g+=ln(X(i),m,X(i),W-m,{c:"#DCE4E1",w:1});
+  for(let j=Math.ceil(y0/step)*step;j<=y1;j+=step)g+=ln(m,Y(j),W-m,Y(j),{c:"#DCE4E1",w:1});
+  const ax0=x0<=0&&0<=x1,ay0=y0<=0&&0<=y1;
+  if(ax0)g+=ln(X(0),m,X(0),W-m,{w:1.8});
+  if(ay0)g+=ln(m,Y(0),W-m,Y(0),{w:1.8});
+  g+='<rect x="'+m+'" y="'+m+'" width="'+(W-2*m)+'" height="'+(W-2*m)+'" fill="none" stroke="'+INK+'" stroke-width="1.5"/>';
+  for(let i=Math.ceil(x0/tl)*tl;i<=x1;i+=tl)lab+=tx(X(i),W-m+14,sg(i),{s:10});
+  for(let j=Math.ceil(y0/tl)*tl;j<=y1;j+=tl)lab+=tx(m-5,Y(j)+3.5,sg(j),{a:"end",s:10});
+  if(ay0)lab+=tx(W-m-6,Y(0)-6,"x",{a:"end",s:12,w:700});
+  if(ax0)lab+=tx(X(0)+8,m+13,"y",{a:"start",s:12,w:700});
+  let c="";
+  polys.forEach(pl=>{c+=poly(pl.pts.map(q=>[X(q[0]),Y(q[1])]),{f:"rgba(14,124,134,.16)",c:pl.c,d:pl.d})});
+  lines.forEach(l=>{const dx=l.b[0]-l.a[0],dy=l.b[1]-l.a[1];c+=ln(X(l.a[0]-60*dx),Y(l.a[1]-60*dy),X(l.a[0]+60*dx),Y(l.a[1]+60*dy),{c:l.c,w:l.w,d:l.d})});
+  segs.forEach(s=>{const o2=s[2]||{};c+=ln(X(s[0][0]),Y(s[0][1]),X(s[1][0]),Y(s[1][1]),o2)});
+  paths.forEach(p=>{c+='<polyline points="'+p.pts.map(q=>f1(X(q[0]))+","+f1(Y(q[1]))).join(" ")+'" fill="none" stroke="'+(p.c||BLUE)+'" stroke-width="2.5"'+(p.arrow?' marker-end="url(#arrb)"':'')+'/>'});
+  const PC={pre:INK,img:BLUE,unk:ORG,mid:TEAL};let pt="";
+  pts.forEach(p=>{const col=PC[p.c||"pre"],px=X(p.p[0]),py=Y(p.p[1]);pt+=dot(px,py,col,5);
+    if(p.l){const pos=p.pos==="l"?[-8,-8,"end"]:p.pos==="b"?[0,19,"middle"]:[8,-8,"start"];pt+=tx(px+pos[0],py+pos[1],p.l,{a:pos[2],c:col,w:700,s:14})}});
+  texts.forEach(t=>{pt+=tx(X(t.p[0]),Y(t.p[1]),t.t,{c:t.c,a:t.a,s:t.s||12,w:700})});
+  return svgw(300,300,'<clipPath id="'+clip+'"><rect x="'+m+'" y="'+m+'" width="'+(W-2*m)+'" height="'+(W-2*m)+'"/></clipPath>'+g+lab+'<g clip-path="url(#'+clip+')">'+c+'</g>'+pt,"Coordinate plane for the question");
+}
+
+/* ---------- angles ---------- */
+function anglefig(o){
+  const vx=o.vx||150,vy=o.vy||165,len=o.len||120,rad=Math.PI/180;
+  const Pt=(d,r)=>[vx+r*Math.cos(d*rad),vy-r*Math.sin(d*rad)];
+  let s="";
+  (o.rays||[]).forEach(r=>{const e=Pt(r.d,len);s+=ln(vx,vy,e[0],e[1],{m:"arr"});if(r.l){const l=Pt(r.d,len+14);s+=tx(l[0],l[1]+4,r.l,{w:700})}});
+  (o.right||[]).forEach(a=>{const d1=[Math.cos(a[0]*rad),-Math.sin(a[0]*rad)],d2=[Math.cos(a[1]*rad),-Math.sin(a[1]*rad)],k=15;
+    s+='<path d="M'+f1(vx+k*d1[0])+' '+f1(vy+k*d1[1])+' L'+f1(vx+k*(d1[0]+d2[0]))+' '+f1(vy+k*(d1[1]+d2[1]))+' L'+f1(vx+k*d2[0])+' '+f1(vy+k*d2[1])+'" fill="none" stroke="'+INK+'" stroke-width="1.6"/>'});
+  (o.arcs||[]).forEach(a=>{const p1=Pt(a.a1,a.r),p2=Pt(a.a2,a.r),big=(a.a2-a.a1)>180?1:0,col=a.c||BLUE;
+    s+='<path d="M'+f1(p1[0])+' '+f1(p1[1])+' A'+a.r+' '+a.r+' 0 '+big+' 0 '+f1(p2[0])+' '+f1(p2[1])+'" fill="none" stroke="'+col+'" stroke-width="2.5"/>';
+    const md=(a.a1+a.a2)/2;
+    if(a.tick){const t1=Pt(md,a.r-6),t2=Pt(md,a.r+6);s+=ln(t1[0],t1[1],t2[0],t2[1],{c:col,w:2})}
+    if(a.t){if(a.lx!==undefined)s+=tx(a.lx,a.ly,a.t,{c:col,w:700,a:"start"});else{const l=Pt(md,a.lr||a.r+26),cs=Math.cos(md*rad),an=cs<-0.2?"end":cs>0.2?"start":"middle";s+=tx(l[0]+(an==="end"?-3:an==="start"?3:0),l[1]+4,a.t,{c:col,w:700,a:an})}}});
+  s+=dot(vx,vy,INK,4);if(o.vl)s+=tx(vx,vy+17,o.vl,{w:700});
+  if(o.note)s+=tx(290,14,"not to scale",{a:"end",s:10,c:MUTE});
+  return svgw(300,185,s,"Angle diagram for the question");
+}
+function icon(cx,cy,a1,a2,l,o){o=o||{};const rad=Math.PI/180,E=(a,r)=>[cx+r*Math.cos(a*rad),cy-r*Math.sin(a*rad)];
+  let s=ln(cx,cy,E(a1,46)[0],E(a1,46)[1])+ln(cx,cy,E(a2,46)[0],E(a2,46)[1]);
+  if(o.right)s+='<path d="M'+(cx+12)+' '+cy+' L'+(cx+12)+' '+(cy-12)+' L'+cx+' '+(cy-12)+'" fill="none" stroke="'+INK+'" stroke-width="1.6"/>';
+  else{const p1=E(a1,20),p2=E(a2,20),md=(a1+a2)/2,t1=E(md,14),t2=E(md,26);s+='<path d="M'+f1(p1[0])+' '+f1(p1[1])+' A20 20 0 0 0 '+f1(p2[0])+' '+f1(p2[1])+'" fill="none" stroke="'+BLUE+'" stroke-width="2.5"/>'+ln(t1[0],t1[1],t2[0],t2[1],{c:BLUE})}
+  return s+dot(cx,cy,INK,3)+tx(cx,cy+18,l,{w:700})}
+
+/* ---------- segments ---------- */
+function segfig(o){
+  const x0=36,x1=264,y=62,X=t=>x0+t*(x1-x0),p=o.pts;let s=ln(X(p[0].t),y,X(p[p.length-1].t),y,{w:2.5});
+  (o.ticks||[]).forEach(k=>{const mx=(X(p[k.i].t)+X(p[k.j].t))/2;for(let n=0;n<k.n;n++){const dx=(n-(k.n-1)/2)*5;s+=ln(mx+dx,y-7,mx+dx,y+7,{w:2})}});
+  p.forEach(q=>{s+=dot(X(q.t),y,INK,4.5)+tx(X(q.t),y+22,q.l,{w:700})});
+  (o.segs||[]).forEach(k=>{s+=tx((X(p[k.i].t)+X(p[k.j].t))/2,y-16,k.t,{c:BLUE,w:700})});
+  if(o.total){const a=X(p[o.total.i].t),b=X(p[o.total.j].t);s+='<path d="M'+a+' '+(y+36)+' V'+(y+44)+' H'+b+' V'+(y+36)+'" fill="none" stroke="'+INK+'" stroke-width="1.5"/>'+tx((a+b)/2,y+62,o.total.t,{w:700})}
+  if(o.ns)s+=tx(290,12,"not to scale",{a:"end",s:10,c:MUTE});
+  return svgw(300,o.total?135:100,s,"Segment diagram for the question");
+}
+
+/* ---------- logic and patterns ---------- */
+function euler(o){let s="";
+  if(o.same)s+='<ellipse cx="150" cy="92" rx="95" ry="62" fill="rgba(14,124,134,.18)" stroke="'+INK+'" stroke-width="2"/>'+tx(150,88,o.outer,{w:700})+tx(150,108,"(the same set)",{s:12});
+  else{s+='<ellipse cx="150" cy="92" rx="135" ry="78" fill="rgba(43,91,215,.07)" stroke="'+INK+'" stroke-width="2"/>'+tx(150,38,o.outer,{w:700})+'<ellipse cx="150" cy="112" rx="72" ry="40" fill="rgba(14,124,134,.2)" stroke="'+INK+'" stroke-width="2"/>'+tx(150,116,o.inner,{w:700});
+    if(o.dot)s+=dot(246,92,ORG,5)+tx(246,79,o.dot,{c:ORG,w:700,s:15})}
+  if(o.cap)s+=tx(150,182,o.cap,{s:12});
+  return svgw(300,192,s,"Venn-style diagram");}
+function seqfig(t){const n=t.length+1,gap=14,bw=Math.min(46,(280-(n-1)*gap)/n),tot=n*bw+(n-1)*gap,x0=(300-tot)/2;let s="";
+  for(let i=0;i<n;i++){const x=x0+i*(bw+gap);s+=box(x,34,bw,36,i<n-1?sg(t[i]):"?",{f:i<n-1?"#fff":"#FFE9A8",s:14,w:700});if(i<n-1)s+=ln(x+bw+1,52,x+bw+gap-1,52,{m:"arr",w:1.5})}
+  return svgw(300,104,s,"Number pattern");}
+const PROPFT=[["3(x + 2) = 15","3x + 6 = 15"],["x + 4 = 9","x = 5"],["x \u2212 4 = 9","x = 13"],["2x = 10","x = 5"],["x/3 = 4","x = 12"],["x = 5","5 = x"],["Any angle \u2220A","m\u2220A = m\u2220A"],["AB = CD and CD = EF","AB = EF"],["a = 7 and a + b = 12","7 + b = 12"]];
+function propfig(i){const p=PROPFT[i];return svgw(300,140,box(30,12,240,36,p[0],{w:700})+ln(150,50,150,88,{m:"arr"})+tx(160,74,"Which property?",{a:"start",s:12,c:ORG,w:700})+box(30,90,240,36,p[1],{w:700}),"A step in solving or proving");}
+function flowH(t){let s="";for(let i=0;i<3;i++){const x=10+i*100;s+=box(x,28,80,58,t[i],{s:12});if(i<2)s+=ln(x+82,57,x+98,57,{m:"arr"})}return svgw(300,110,s,"Flow of reasoning");}
+function chainfig(mode,c){let s="";
+  if(mode==="syl"){s+=box(20,8,220,30,c[0],{s:12})+ln(130,40,130,66,{m:"arr"})+tx(138,57,"then",{a:"start",s:11})+box(20,68,220,30,c[1],{s:12})+ln(130,100,130,126,{m:"arr"})+tx(138,117,"then",{a:"start",s:11})+box(20,128,220,30,c[2],{s:12})+'<path d="M242 23 C292 23 292 143 244 143" fill="none" stroke="'+ORG+'" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arr)"/>'+tx(284,88,"?",{c:ORG,w:700,s:20})}
+  else if(mode==="det"){s+=box(20,20,230,32,"\u2713 "+c[0],{s:12,f:"#E6F4EA",c:"#17693A"})+ln(135,54,135,86,{m:"arr"})+tx(145,75,"if\u2013then",{a:"start",s:11})+box(20,88,230,32,"?",{f:"#FFE9A8",w:700,s:16})}
+  else{s+=box(20,20,230,32,"?",{f:"#FFE9A8",w:700,s:16})+ln(135,54,135,86,{m:"arr"})+tx(145,75,"if\u2013then",{a:"start",s:11})+box(20,88,230,32,"\u2713 "+c[1],{s:12,f:"#E6F4EA",c:"#17693A"})}
+  return svgw(300,mode==="syl"?168:140,s,"Chain of if-then statements");}
+function reasonfig(i){
+  if(i===0)return segfig({pts:[{t:0,l:"A"},{t:.55,l:"B"},{t:1,l:"C"}]});
+  if(i===1)return anglefig({vl:"B",rays:[{d:20,l:"C"},{d:80,l:"D"},{d:140,l:"A"}],arcs:[{a1:20,a2:80,r:36,t:"\u2220DBC",lr:64},{a1:80,a2:140,r:36,t:"\u2220ABD",lr:64}]});
+  if(i===2)return segfig({pts:[{t:0,l:"A"},{t:.5,l:"M"},{t:1,l:"B"}],ticks:[{i:0,j:1,n:1},{i:1,j:2,n:1}]});
+  if(i===3)return anglefig({vl:"B",rays:[{d:10,l:"C"},{d:70,l:"D"},{d:130,l:"A"}],arcs:[{a1:10,a2:70,r:40,tick:1},{a1:70,a2:130,r:40,tick:1}]});
+  if(i===4)return anglefig({vy:92,len:80,rays:[{d:20},{d:200},{d:120},{d:300}],arcs:[{a1:20,a2:120,r:30,t:"1",lr:50},{a1:200,a2:300,r:30,t:"2",lr:50}]});
+  if(i===5)return anglefig({vl:"",rays:[{d:0},{d:70},{d:180}],arcs:[{a1:0,a2:70,r:36,t:"1",lr:58},{a1:70,a2:180,r:36,t:"2",lr:58}]});
+  if(i===6){let s="";[[40,"A","B"],[90,"C","D"]].forEach(r=>{s+=ln(50,r[0],210,r[0],{w:2.5})+ln(126,r[0]-7,126,r[0]+7)+ln(134,r[0]-7,134,r[0]+7)+dot(50,r[0])+dot(210,r[0])+tx(50,r[0]+20,r[1],{w:700})+tx(210,r[0]+20,r[2],{w:700})});return svgw(300,125,s,"Two segments marked equal")}
+  if(i===7)return svgw(300,135,icon(55,95,15,75,"A")+icon(150,95,15,75,"B")+icon(245,95,15,75,"C")+tx(102,70,"\u2245",{s:20})+tx(197,70,"\u2245",{s:20}),"Three congruent angles");
+  return svgw(300,135,icon(90,95,0,90,"P",{right:1})+icon(210,95,0,90,"Q",{right:1}),"Two right angles");
+}
+
+/* ---------- Chapter 1 and 3 static figures ---------- */
+const figCollinear=()=>segfig({pts:[{t:0,l:"P"},{t:.45,l:"Q"},{t:1,l:"R"}]});
+const figPlane3=()=>svgw(300,150,poly([[40,125],[220,125],[270,45],[90,45]],{f:"rgba(14,124,134,.14)"})+dot(90,100,INK,5)+tx(80,94,"A",{w:700})+dot(190,105,INK,5)+tx(200,98,"B",{w:700})+dot(160,65,INK,5)+tx(172,60,"C",{w:700}),"A plane with three points");
+const figTwoPlanes=()=>svgw(300,180,poly([[30,150],[210,150],[280,90],[100,90]],{f:"rgba(14,124,134,.18)"})+poly([[70,20],[250,20],[250,120],[70,120]],{f:"rgba(43,91,215,.12)"})+ln(70,120,250,120,{c:ORG,w:3,d:1}),"Two planes that cross");
+const figOppRays=()=>svgw(300,100,ln(150,50,28,50,{m:"arr"})+ln(150,50,272,50,{m:"arr"})+dot(150,50,INK,5)+tx(150,76,"O",{w:700})+tx(24,40,"A",{w:700})+tx(276,40,"B",{w:700}),"Two rays from one point");
+const figAng=m=>anglefig({rays:[{d:0},{d:m}],arcs:[{a1:0,a2:m,r:40,t:m+"\u00B0",lr:66}]});
+const figStraight=()=>anglefig({rays:[{d:0},{d:180}],arcs:[{a1:0,a2:180,r:42,t:"?",c:ORG,lr:62}]});
+const figSkew=()=>{let s="";[[[40,100],[160,100]],[[40,170],[160,170]],[[40,100],[40,170]],[[160,100],[160,170]],[[100,60],[220,60]],[[100,130],[220,130]],[[100,60],[100,130]],[[220,60],[220,130]],[[40,100],[100,60]],[[160,100],[220,60]],[[40,170],[100,130]],[[160,170],[220,130]]].forEach(e=>{s+=ln(e[0][0],e[0][1],e[1][0],e[1][1],{c:"#8A949C",w:1.5})});
+  return svgw(300,195,s+ln(40,170,160,170,{c:ORG,w:3.5})+ln(220,60,220,130,{c:BLUE,w:3.5})+tx(100,188,"\u2113",{c:ORG,w:700,s:15})+tx(238,98,"m",{c:BLUE,w:700,s:15}),"A box with two highlighted edges")};
+const figPerpT=()=>svgw(300,190,ln(20,60,280,60)+ln(20,130,280,130)+ln(150,10,150,182)+'<path d="M162 60 V72 H150" fill="none" stroke="'+INK+'" stroke-width="1.6"/>'+'<path d="M232 54 L240 60 L232 66 M232 124 L240 130 L232 136" fill="none" stroke="'+INK+'" stroke-width="2"/>'+tx(172,126,"?",{c:ORG,w:700,s:18})+tx(268,52,"a",{w:700})+tx(268,122,"b",{w:700}),"Parallel lines and a perpendicular transversal");
+const figParPost=()=>svgw(300,170,ln(20,130,280,130)+dot(150,60,INK,5)+tx(162,54,"P",{a:"start",w:700})+tx(268,120,"\u2113",{w:700,s:15}),"A line and a point not on it");
+const figSlopeV=()=>plane({lines:[{a:[2,-3],b:[2,4],c:BLUE}]});
+const figSlopeH=()=>plane({lines:[{a:[-4,2],b:[4,2],c:BLUE}]});
+const figPerpSlopes=()=>plane({lines:[{a:[0,0],b:[2,4],c:BLUE},{a:[0,0],b:[4,-2],c:ORG}],view:[-6,6,-6,6]});
+
+/* ---------- Chapter 4 static figures ---------- */
+function fourfig(){let s="";const T=(x,y,k)=>{k=k||1;return [[x,y],[x+24*k,y],[x,y+30*k]]},G={c:"#8A949C",d:1},I={f:"rgba(43,91,215,.2)",c:BLUE};
+  s+=poly(T(8,70),G)+poly(T(38,84),I);
+  s+=poly(T(80,70),G)+ln(109,58,109,116,{c:ORG,d:1})+poly([[138,70],[114,70],[138,100]],I);
+  s+=poly(T(190,70),G)+poly([[190,70],[190,94],[160,70]],I);
+  s+=poly(T(232,70),G)+poly(T(232,70,1.8),I);
+  ["Translation","Reflection","Rotation","Dilation"].forEach((n,i)=>{s+=tx(37+i*75,152,n,{s:12})});
+  return svgw(300,165,s,"A triangle and four kinds of images");}
+const parfig=()=>svgw(300,150,ln(105,12,105,128,{c:ORG,d:1})+ln(195,12,195,128,{c:ORG,d:1})+tx(105,10,"\u2113\u2081",{c:ORG,w:700})+tx(195,10,"\u2113\u2082",{c:ORG,w:700})+poly([[50,60],[80,60],[50,100]],{c:"#8A949C",d:1})+poly([[160,60],[130,60],[160,100]],{c:"#8A949C",d:1})+poly([[230,60],[260,60],[230,100]],{f:"rgba(43,91,215,.2)",c:BLUE})+tx(150,146,"Start, after \u2113\u2081, then after \u2113\u2082",{s:12}),"A triangle reflected across two parallel lines");
+function intfig(){const O=[150,85],rad=Math.PI/180,th=40,S=p=>[O[0]+p[0],O[1]-p[1]],refl=(p,t)=>{const c=Math.cos(2*t*rad),s=Math.sin(2*t*rad);return [p[0]*c+p[1]*s,p[0]*s-p[1]*c]};
+  const T=[[45,25],[69,25],[45,49]],T1=T.map(p=>refl(p,0)),T2=T1.map(p=>refl(p,th));
+  const L=(t,c)=>ln(O[0]-140*Math.cos(t*rad),O[1]+140*Math.sin(t*rad),O[0]+140*Math.cos(t*rad),O[1]-140*Math.sin(t*rad),{c:c,d:1});
+  return svgw(300,170,L(0,ORG)+L(th,ORG)+poly(T.map(S),{c:"#8A949C",d:1})+poly(T1.map(S),{c:"#8A949C",d:1})+poly(T2.map(S),{f:"rgba(43,91,215,.2)",c:BLUE})+dot(O[0],O[1],INK,4)+tx(O[0]-8,O[1]+16,"O",{w:700})+tx(150,164,"Start, after the 1st line, then after the 2nd line",{s:11}),"A triangle reflected across two intersecting lines");}
+const shrinkfig=()=>svgw(300,150,poly([[40,125],[190,125],[40,30]],{c:"#8A949C",d:1})+poly([[40,125],[115,125],[40,77.5]],{f:"rgba(43,91,215,.2)",c:BLUE})+tx(150,145,"Before (dashed) and after (blue)",{s:12}),"A triangle and its dilation");
+const comp180fig=()=>plane({pts:[{p:[3,2],l:"A"},{p:[-3,-2],l:"A\u2033",c:"img"}],segs:[[[3,2],[-3,-2],{d:1,c:BLUE}]]});
+
+/* ---------- transversal figure ---------- */
+function tfig(hl){
+  hl=hl||[];
+  const xs=y=>110+0.4706*(y-10),tx=xs(60),bx=xs(130);
+  const L=(cx,cy)=>({0:[cx-24,cy-10],1:[cx+24,cy-10],2:[cx-24,cy+22],3:[cx+30,cy+22]});
+  const a=L(tx,60),b=L(bx,130),pos={};
+  for(let i=0;i<4;i++){pos[i+1]=a[i];pos[i+5]=b[i]}
+  let s='<svg class="fig" viewBox="0 0 300 190" role="img" aria-label="Two parallel lines a and b cut by transversal t, with angles numbered 1 to 8. Not drawn to scale.">';
+  s+='<line x1="20" y1="60" x2="280" y2="60" stroke="#1B2530" stroke-width="2"/><line x1="20" y1="130" x2="280" y2="130" stroke="#1B2530" stroke-width="2"/>';
+  s+='<line x1="'+xs(8)+'" y1="8" x2="'+xs(184)+'" y2="184" stroke="#1B2530" stroke-width="2"/>';
+  s+='<path d="M234 54 L242 60 L234 66 M234 124 L242 130 L234 136" fill="none" stroke="#1B2530" stroke-width="2"/>';
+  s+='<text x="268" y="52">a</text><text x="268" y="122">b</text><text x="'+(xs(8)+8)+'" y="18">t</text>';
+  for(let i=1;i<=8;i++){const p=pos[i],h=hl.includes(i);
+    if(h)s+='<circle class="hlc" cx="'+p[0]+'" cy="'+(p[1]-4)+'" r="10"/>';
+    s+='<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" class="'+(h?"hlt":"")+'">'+i+'</text>';}
+  return s+'</svg>';
+}
+const CAT={corr:[[1,5],[2,6],[3,7],[4,8]],altint:[[3,6],[4,5]],altext:[[1,8],[2,7]],cons:[[3,5],[4,6]],vert:[[1,4],[2,3],[5,8],[6,7]],lin:[[1,2],[1,3],[2,4],[3,4],[5,6],[5,7],[6,8],[7,8]]};
+const NAME={corr:"Corresponding angles",altint:"Alternate interior angles",altext:"Alternate exterior angles",cons:"Consecutive interior angles",vert:"Vertical angles",lin:"Linear pair"};
+const CONV={corr:"Corresponding Angles Converse",altint:"Alternate Interior Angles Converse",altext:"Alternate Exterior Angles Converse",cons:"Consecutive Interior Angles Converse"};
+
+const GENS={1:[],2:[],3:[],4:[]};
+
+/* =================== CHAPTER 1 =================== */
+GENS[1]=[
+{skill:"Segment addition",d:2,f(){const x=R(3,9),p=R(1,6),q=R(1,6),ab=2*x+p,bc=x+q,ac=ab+bc;
+  return Q({skill:"Segment addition",fig:segfig({ns:1,pts:[{t:0,l:"A"},{t:.5,l:"B"},{t:1,l:"C"}],segs:[{i:0,j:1,t:"2x + "+p},{i:1,j:2,t:"x + "+q}],total:{i:0,j:2,t:"AC = "+ac}}),q:`B is between A and C on a line. AB = 2x + ${p}, BC = x + ${q}, and AC = ${ac}. What is BC?`,correct:bc,wrongs:nw(bc,[x,ab,ac]),
+  hints:["Segment Addition Postulate: AB + BC = AC.",`Write 2x + ${p} + x + ${q} = ${ac}. Solve for x first, then substitute into BC.`],
+  sol:`3x + ${p+q} = ${ac}, so x = ${x}. BC = ${x} + ${q} = ${bc}.`})}},
+{skill:"Midpoint and distance",d:1,f(){const x1=R(-8,8),y1=R(-8,8);let x2,y2;do{x2=x1+2*R(-6,6);y2=y1+2*R(-6,6)}while(x2===x1&&y2===y1);
+  const mx=(x1+x2)/2,my=(y1+y2)/2;
+  return Q({skill:"Midpoint and distance",fig:plane({pts:[{p:[x1,y1],l:"A"},{p:[x2,y2],l:"B"}],segs:[[[x1,y1],[x2,y2]]]}),q:`What is the midpoint of the segment with endpoints ${P(x1,y1)} and ${P(x2,y2)}?`,correct:P(mx,my),
+  wrongs:[P((x2-x1)/2,(y2-y1)/2),P(x1+x2,y1+y2),P(mx+1,my-1)],
+  hints:["Midpoint = the average of the x-coordinates and the average of the y-coordinates.",`Add ${sg(x1)} and ${sg(x2)}, then divide by 2. Do the same for y.`],
+  sol:`((${sg(x1)} + ${sg(x2)})/2, (${sg(y1)} + ${sg(y2)})/2) = ${P(mx,my)}.`})}},
+{skill:"Midpoint and distance",d:2,f(){const t=pick([[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15]]);const sw=Math.random()<.5;const dx=sw?t[1]:t[0],dy=sw?t[0]:t[1],c=t[2];
+  const x1=R(-6,4),y1=R(-6,4),sx=pick([-1,1]),sy=pick([-1,1]),x2=x1+sx*dx,y2=y1+sy*dy;
+  return Q({skill:"Midpoint and distance",fig:plane({pts:[{p:[x1,y1],l:"A"},{p:[x2,y2],l:"B"}],segs:[[[x1,y1],[x2,y2]],[[x1,y1],[x2,y1],{d:1,c:ORG}],[[x2,y1],[x2,y2],{d:1,c:ORG}]]}),q:`What is the distance between ${P(x1,y1)} and ${P(x2,y2)}?`,correct:c,wrongs:[dx+dy,c-1,c+1],
+  hints:["Distance formula: d = \u221A((x\u2082 \u2212 x\u2081)\u00B2 + (y\u2082 \u2212 y\u2081)\u00B2).",`The horizontal change is ${dx} and the vertical change is ${dy}.`],
+  sol:`d = \u221A(${dx}\u00B2 + ${dy}\u00B2) = \u221A${dx*dx+dy*dy} = ${c}.`})}},
+{skill:"Midpoint and distance",d:3,f(){let ax,ay,mx,my;do{ax=nz(-6,6);ay=nz(-6,6);mx=nz(-5,5);my=nz(-5,5)}while(ax===mx||ay===my);const bx=2*mx-ax,by=2*my-ay;
+  return Q({skill:"Midpoint and distance",fig:plane({pts:[{p:[ax,ay],l:"A"},{p:[mx,my],l:"M",c:"mid"}],segs:[[[ax,ay],[mx,my]]]}),q:`M${P(mx,my)} is the midpoint of AB, and A is ${P(ax,ay)}. What are the coordinates of B?`,correct:P(bx,by),
+  wrongs:[P(mx-ax,my-ay),P(mx+ax,my+ay),P(2*mx+ax,2*my+ay)],
+  hints:["The midpoint is the average of the endpoints. Work backward: (a + b)/2 = m means b = 2m \u2212 a.",`For x: 2(${sg(mx)}) \u2212 (${sg(ax)}). Do the same for y.`],
+  sol:`B = (2(${sg(mx)}) \u2212 ${sg(ax)}, 2(${sg(my)}) \u2212 ${sg(ay)}) = ${P(bx,by)}.`})}},
+{skill:"Angle addition and bisectors",d:2,f(){const x=R(4,12),a=R(2,15),b=R(2,15),abd=3*x+a,dbc=x+b,abc=abd+dbc;
+  return Q({skill:"Angle addition and bisectors",fig:anglefig({note:1,vl:"B",rays:[{d:20,l:"C"},{d:85,l:"D"},{d:150,l:"A"}],arcs:[{a1:85,a2:150,r:38,t:"(3x + "+a+")\u00B0",lr:106},{a1:20,a2:85,r:38,t:"(x + "+b+")\u00B0",lr:106},{a1:20,a2:150,r:92,t:"m\u2220ABC = "+abc+"\u00B0",c:ORG,lx:10,ly:30}]}),q:`D is in the interior of \u2220ABC. m\u2220ABD = (3x + ${a})\u00B0, m\u2220DBC = (x + ${b})\u00B0, and m\u2220ABC = ${abc}\u00B0. What is m\u2220DBC?`,unit:"\u00B0",correct:dbc,wrongs:nw(dbc,[x,abd,abc]),
+  hints:["Angle Addition Postulate: m\u2220ABD + m\u2220DBC = m\u2220ABC.",`Solve (3x + ${a}) + (x + ${b}) = ${abc} for x, then find x + ${b}.`],
+  sol:`4x + ${a+b} = ${abc}, so x = ${x}. m\u2220DBC = ${x} + ${b} = ${dbc}\u00B0.`})}},
+{skill:"Angle addition and bisectors",d:3,f(){const x=R(6,14),a=R(2,10),b=2*x-a,half=4*x+a;
+  return Q({skill:"Angle addition and bisectors",fig:anglefig({vl:"B",rays:[{d:10,l:"C"},{d:10+half,l:"D"},{d:10+2*half,l:"A"}],arcs:[{a1:10+half,a2:10+2*half,r:40,t:"(4x + "+a+")\u00B0",lr:72},{a1:10,a2:10+half,r:40,t:"(6x \u2212 "+b+")\u00B0",lr:72}]}),q:`Ray BD bisects \u2220ABC. m\u2220ABD = (4x + ${a})\u00B0 and m\u2220DBC = (6x \u2212 ${b})\u00B0. What is m\u2220ABC?`,unit:"\u00B0",correct:2*half,wrongs:nw(2*half,[half,x,half+x]),
+  hints:["A bisector splits an angle into two equal angles, so set the two expressions equal.",`4x + ${a} = 6x \u2212 ${b}. After finding x, find one half and double it.`],
+  sol:`x = ${x}. Each half is ${half}\u00B0, so m\u2220ABC = 2(${half}) = ${2*half}\u00B0.`})}},
+{skill:"Angle pairs",d:1,f(){const comp=Math.random()<.5,m=comp?R(15,75):R(20,160),ans=(comp?90:180)-m,other=comp?180-m:90-m;
+  return Q({skill:"Angle pairs",fig:comp?anglefig({right:[[0,90]],rays:[{d:0},{d:m},{d:90}],arcs:[{a1:0,a2:m,r:44,t:m+"\u00B0",lr:72},{a1:m,a2:90,r:62,t:"?",c:ORG,lr:80}]}):anglefig({rays:[{d:0},{d:m},{d:180}],arcs:[{a1:0,a2:m,r:44,t:m+"\u00B0",lr:72},{a1:m,a2:180,r:62,t:"?",c:ORG,lr:82}]}),q:`What is the measure of the ${comp?"complement":"supplement"} of a ${m}\u00B0 angle?`,unit:"\u00B0",correct:ans,wrongs:nw(ans,[other,m]),
+  hints:[comp?"Complementary angles add to 90\u00B0.":"Supplementary angles add to 180\u00B0."],sol:`${comp?90:180} \u2212 ${m} = ${ans}\u00B0.`})}},
+{skill:"Angle pairs",d:2,f(){const comp=Math.random()<.5,tot=comp?90:180;let x,a,b;
+  if(comp){x=R(6,15);a=R(2,15);b=90-3*x-a}else{x=R(15,40);a=R(2,15);b=180-3*x-a}
+  return Q({skill:"Angle pairs",fig:anglefig({note:1,right:comp?[[0,90]]:[],rays:[{d:0},{d:2*x+a},{d:tot}],arcs:[{a1:0,a2:2*x+a,r:44,t:"(2x + "+a+")\u00B0",lr:74},{a1:2*x+a,a2:tot,r:62,t:"(x + "+b+")\u00B0",lr:84}]}),q:`Two angles are ${comp?"complementary":"supplementary"}. Their measures are (2x + ${a})\u00B0 and (x + ${b})\u00B0. What is x?`,correct:x,wrongs:nw(x,[tot-a-b,x*2,x+2]),
+  hints:[`${comp?"Complementary":"Supplementary"} angles add to ${tot}\u00B0. Write an equation.`,`(2x + ${a}) + (x + ${b}) = ${tot}`],
+  sol:`3x + ${a+b} = ${tot}, so 3x = ${tot-a-b} and x = ${x}.`})}},
+{skill:"Angle pairs",d:2,f(){const x=R(10,20),a=R(2,9),b=2*x-a;
+  return Q({skill:"Angle pairs",fig:anglefig({note:1,vy:95,len:82,rays:[{d:15},{d:15+5*x-a},{d:195},{d:195+5*x-a}],arcs:[{a1:15,a2:15+5*x-a,r:30,t:"(5x \u2212 "+a+")\u00B0",lr:56},{a1:195,a2:195+5*x-a,r:30,t:"(3x + "+b+")\u00B0",lr:56}]}),q:`Two vertical angles measure (5x \u2212 ${a})\u00B0 and (3x + ${b})\u00B0. What is x?`,correct:x,wrongs:nw(x,[x*2,a+b,x+3]),
+  hints:["Vertical angles are congruent, so their measures are equal.",`5x \u2212 ${a} = 3x + ${b}`],
+  sol:`2x = ${a+b}, so x = ${x}.`})}},
+{skill:"Perimeter and area",d:1,f(){const w=R(3,9),h=R(2,7),x0=R(-5,0),y0=R(-5,0),per=Math.random()<.5;
+  return Q({skill:"Perimeter and area",fig:plane({polys:[{pts:[[x0,y0],[x0+w,y0],[x0+w,y0+h],[x0,y0+h]]}],pts:[{p:[x0,y0]},{p:[x0+w,y0]},{p:[x0+w,y0+h]},{p:[x0,y0+h]}]}),q:`A rectangle has vertices ${P(x0,y0)}, ${P(x0+w,y0)}, ${P(x0+w,y0+h)}, and ${P(x0,y0+h)}. What is its ${per?"perimeter":"area"}?`,correct:per?2*(w+h):w*h,wrongs:per?[w*h,w+h,2*w+h]:[2*(w+h),w+h,w*h+w],
+  hints:[`Find the width and the height by counting the change in x and the change in y.`,per?"Perimeter = 2(width + height).":"Area = width \u00D7 height."],
+  sol:`Width = ${w}, height = ${h}. ${per?`P = 2(${w} + ${h}) = ${2*(w+h)}`:`A = ${w} \u00D7 ${h} = ${w*h}`}.`})}},
+{skill:"Perimeter and area",d:2,f(){let w,h;do{w=R(3,10);h=R(3,9)}while((w*h)%2);const a=R(-4,2),b=R(-4,2),c=R(a,a+w);
+  return Q({skill:"Perimeter and area",fig:plane({polys:[{pts:[[a,b],[a+w,b],[c,b+h]]}],pts:[{p:[a,b]},{p:[a+w,b]},{p:[c,b+h]}]}),q:`A triangle has vertices ${P(a,b)}, ${P(a+w,b)}, and ${P(c,b+h)}. What is its area?`,correct:w*h/2,wrongs:nw(w*h/2,[w*h,w+h]),
+  hints:["Two vertices have the same y-coordinate, so that side is the base.","Area = \u00BD \u00D7 base \u00D7 height. The height is the vertical distance to the third vertex."],
+  sol:`Base = ${w}, height = ${h}. A = \u00BD(${w})(${h}) = ${w*h/2}.`})}},
+stat("Points, lines, and planes",1,[
+  ["Three or more points that lie on the same line are called\u2026","collinear",["coplanar","concurrent","congruent"],"Think about points lined up on one line.","",figCollinear],
+  ["How many planes contain three noncollinear points?","exactly one",["exactly two","exactly three","infinitely many"],"Three noncollinear points determine one plane.","",figPlane3],
+  ["What is the intersection of two distinct planes?","a line",["a point","a plane","a ray"],"Think of two walls meeting at a corner of a room.","",figTwoPlanes],
+  ["Two rays that share an endpoint and form a straight line are called\u2026","opposite rays",["parallel rays","congruent rays","adjacent angles"],"They point in opposite directions from the same endpoint.","",figOppRays],
+  ["An angle that measures 135\u00B0 is classified as\u2026","obtuse",["acute","right","straight"],"Obtuse angles measure between 90\u00B0 and 180\u00B0.","",()=>figAng(135)],
+  ["What is the measure of a straight angle?","180\u00B0",["90\u00B0","360\u00B0","270\u00B0"],"A straight angle forms a line.","",figStraight]
+])
+];
+
+/* =================== CHAPTER 2 =================== */
+const CONDS=[
+ {p:"a number is divisible by 10",np:"a number is not divisible by 10",q:"the number is divisible by 5",nq:"the number is not divisible by 5"},
+ {p:"a figure is a square",np:"a figure is not a square",q:"the figure is a rectangle",nq:"the figure is not a rectangle"},
+ {p:"an angle measures 90\u00B0",np:"an angle does not measure 90\u00B0",q:"the angle is a right angle",nq:"the angle is not a right angle"},
+ {p:"two angles are vertical angles",np:"two angles are not vertical angles",q:"the angles are congruent",nq:"the angles are not congruent"},
+ {p:"a polygon is a triangle",np:"a polygon is not a triangle",q:"the polygon has three sides",nq:"the polygon does not have three sides"}];
+const CONDSH=[["divisible by 10","divisible by 5"],["squares","rectangles"],["90\u00B0 angles","right angles"],["vertical angles","congruent angles"],["triangles","3-sided polygons"]];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const PROPS=["Reflexive Property of Equality","Symmetric Property of Equality","Transitive Property of Equality","Substitution Property of Equality","Addition Property of Equality","Subtraction Property of Equality","Multiplication Property of Equality","Division Property of Equality","Distributive Property"];
+const PROPQ=[["Given 3(x + 2) = 15, the next step is 3x + 6 = 15.",8],["Given x + 4 = 9, the next step is x = 5.",5],["Given x \u2212 4 = 9, the next step is x = 13.",4],["Given 2x = 10, the next step is x = 5.",7],["Given x/3 = 4, the next step is x = 12.",6],["Given x = 5, the next step is 5 = x.",1],["m\u2220A = m\u2220A",0],["Given AB = CD and CD = EF, conclude AB = EF.",2],["Given a = 7 and a + b = 12, conclude 7 + b = 12.",3]];
+const REASONS=["Segment Addition Postulate","Angle Addition Postulate","Definition of midpoint","Definition of angle bisector","Vertical Angles Congruence Theorem","Linear Pair Postulate","Definition of congruent segments","Transitive Property of Congruence","Right Angles Congruence Theorem"];
+const REASONQ=[["B is between A and C, so AB + BC = AC.",0],["m\u2220ABD + m\u2220DBC = m\u2220ABC when D is in the interior of \u2220ABC.",1],["M is the midpoint of AB, so AM = MB.",2],["BD bisects \u2220ABC, so \u2220ABD \u2245 \u2220DBC.",3],["\u22201 and \u22202 are vertical angles, so \u22201 \u2245 \u22202.",4],["\u22201 and \u22202 form a linear pair, so they are supplementary.",5],["AB = CD, so AB \u2245 CD.",6],["\u2220A \u2245 \u2220B and \u2220B \u2245 \u2220C, so \u2220A \u2245 \u2220C.",7],["\u2220P and \u2220Q are right angles, so \u2220P \u2245 \u2220Q.",8]];
+const CHAINS=[["you study","you understand the material","you pass the test"],["it rains","the game is canceled","we go to the mall"],["a shape is a square","the shape has four sides","the shape is a polygon"]];
+
+GENS[2]=[
+{skill:"Conditional statements",d:2,f(){const c=pick(CONDS),kind=pick(["converse","inverse","contrapositive"]);
+  const F={conditional:`If ${c.p}, then ${c.q}.`,converse:`If ${c.q}, then ${c.p}.`,inverse:`If ${c.np}, then ${c.nq}.`,contrapositive:`If ${c.nq}, then ${c.np}.`};
+  const wr=["conditional","converse","inverse","contrapositive"].filter(k=>k!==kind).map(k=>F[k]);
+  const how={converse:"Swap the hypothesis and conclusion.",inverse:"Negate both the hypothesis and the conclusion.",contrapositive:"Swap them and negate both."};
+  return Q({skill:"Conditional statements",fig:euler({outer:CONDSH[CONDS.indexOf(c)][1],inner:CONDSH[CONDS.indexOf(c)][0],cap:"Picture of the original statement"}),q:`Conditional statement: \u201C${F.conditional}\u201D Which statement is its ${kind}?`,correct:F[kind],wrongs:wr,hints:[how[kind]],sol:`${how[kind]} Result: ${F[kind]}`})}},
+stat("Conditional statements",1,[
+ ["Which statement always has the same truth value as the original conditional?","The contrapositive",["The converse","The inverse","The biconditional"],"The contrapositive swaps and negates, and it is logically equivalent to the original.","",()=>euler({outer:"q",inner:"p",cap:"If p, then q: everything in p is in q"})],
+ ["A biconditional statement is true only when\u2026","the conditional and its converse are both true",["only the conditional is true","only the converse is true","the inverse is true and the converse is false"],"A biconditional is \u201Cif and only if,\u201D which means both directions work.","",()=>euler({same:1,outer:"p and q",cap:"p if and only if q"})],
+ ["What do you need to show that a conditional statement is false?","a counterexample",["a diagram","a definition","an example that works"],"A counterexample makes the hypothesis true and the conclusion false.","",()=>euler({outer:"p is true",inner:"q is true",dot:"?",cap:"p true, q false: outside the small set"})]
+]),
+{skill:"Conditional statements",d:2,f(){const a=pick([3,4,5,6]),b=2*a,ce=a*pick([3,5,7,9]);
+  return Q({skill:"Conditional statements",fig:euler({outer:"multiples of "+a,inner:"multiples of "+b,dot:"?",cap:"Look in the big set, outside the small one"}),q:`Which number is a counterexample to the statement \u201CIf a number is divisible by ${a}, then it is divisible by ${b}\u201D?`,correct:ce,wrongs:[b*2,b*3,ce+1],
+  hints:["A counterexample must make the \u201Cif\u201D part true and the \u201Cthen\u201D part false.",`Find a multiple of ${a} that is not a multiple of ${b}.`],
+  sol:`${ce} is divisible by ${a} (${ce} = ${a} \u00D7 ${ce/a}) but not by ${b}, so it breaks the statement.`})}},
+{skill:"Inductive reasoning",d:1,f(){let s,d,t,rule;
+  if(Math.random()<.5){s=R(2,9);d=nz(-5,7);t=[0,1,2,3].map(i=>s+i*d);rule=`add ${d}`;const nx=s+4*d;
+    return Q({skill:"Inductive reasoning",fig:seqfig(t),q:`Find the next number in the pattern: ${t.map(sg).join(", ")}, \u2026`,correct:nx,wrongs:[nx+d,nx-d,t[3]*2],hints:["Look at the difference between each pair of neighbors."],sol:`The pattern is to ${rule}, so the next term is ${sg(nx)}.`})}
+  const r=pick([2,3]);s=R(1,4);t=[0,1,2,3].map(i=>s*r**i);const nx=s*r**4;
+  return Q({skill:"Inductive reasoning",fig:seqfig(t),q:`Find the next number in the pattern: ${t.join(", ")}, \u2026`,correct:nx,wrongs:[t[3]+r,t[3]+t[2],nx+r],hints:["Check whether you add or multiply to get from one term to the next."],sol:`Each term is multiplied by ${r}, so the next term is ${t[3]} \u00D7 ${r} = ${nx}.`})}},
+{skill:"Inductive reasoning",d:3,f(){const a=R(1,5),d=R(2,4),k=R(1,3);let t=[a],df=d;for(let i=0;i<4;i++){t.push(t[t.length-1]+df);df+=k}
+  const nx=t[4]+df,last=t[4]-t[3];
+  return Q({skill:"Inductive reasoning",fig:seqfig(t),q:`Find the next number in the pattern: ${t.join(", ")}, \u2026`,correct:nx,wrongs:[t[4]+last,t[4]*2,nx+k],hints:["Find the differences between terms. Do they stay the same?","The differences themselves form a pattern."],
+  sol:`The differences are ${t.slice(1).map((v,i)=>v-t[i]).join(", ")}, increasing by ${k} each time. The next difference is ${df}, so the next term is ${t[4]} + ${df} = ${nx}.`})}},
+{skill:"Properties of equality",d:1,f(){const it=pick(PROPQ),c=PROPS[it[1]],w=shuffle(PROPS.filter((p,i)=>i!==it[1])).slice(0,3);
+  return Q({skill:"Properties of equality",fig:propfig(PROPQ.indexOf(it)),q:`Which property justifies this? ${it[0]}`,correct:c,wrongs:w,hints:["Ask what was done to both sides, or whether a value was swapped in."],sol:`${c}.`})}},
+{skill:"Reasons in proofs",d:2,f(){const it=pick(REASONQ),c=REASONS[it[1]],w=shuffle(REASONS.filter((p,i)=>i!==it[1])).slice(0,3);
+  return Q({skill:"Reasons in proofs",fig:reasonfig(it[1]),q:`What is the reason for this statement in a proof? \u201C${it[0]}\u201D`,correct:c,wrongs:w,hints:["Match the key words in the statement to a definition, postulate, or theorem."],sol:`${c}.`})}},
+{skill:"Logical arguments",d:3,f(){const c=pick(CHAINS),m=pick(["syl","det","bad"]);
+  if(m==="syl")return Q({skill:"Logical arguments",fig:chainfig("syl",c),q:`Given: If ${c[0]}, then ${c[1]}. If ${c[1]}, then ${c[2]}. Which conclusion follows by the Law of Syllogism?`,correct:`If ${c[0]}, then ${c[2]}.`,wrongs:[`If ${c[2]}, then ${c[0]}.`,`If ${c[1]}, then ${c[0]}.`,`If not ${c[0]}, then not ${c[2]}.`],hints:["Link the statements: the conclusion of the first becomes the hypothesis of the second."],sol:`Chaining the two gives: If ${c[0]}, then ${c[2]}.`});
+  if(m==="det")return Q({skill:"Logical arguments",fig:chainfig("det",c),q:`Given: If ${c[0]}, then ${c[1]}. It is true that ${c[0]}. What can you conclude?`,correct:cap(c[1])+".",wrongs:[`${cap(c[2])}.`,"No valid conclusion can be drawn.",`${cap(c[0])} is false.`],hints:["Law of Detachment: if p \u2192 q is true and p is true, then q is true."],sol:`The hypothesis is true, so the conclusion is true: ${c[1]}.`});
+  return Q({skill:"Logical arguments",fig:chainfig("bad",c),q:`Given: If ${c[0]}, then ${c[1]}. It is true that ${c[1]}. What can you conclude?`,correct:"No valid conclusion can be drawn.",wrongs:[`${cap(c[0])}.`,`${cap(c[0])} is false.`,`If ${c[1]}, then ${c[0]}.`],hints:["Knowing the conclusion is true does not force the hypothesis to be true."],sol:`That would be assuming the converse. ${cap(c[1])} could happen for other reasons, so no valid conclusion follows.`})}},
+stat("Inductive vs. deductive",1,[
+ ["You test 2 + 4, 6 + 8, and 10 + 12, see that every sum is even, and conclude the sum of two even numbers is always even. This is\u2026","inductive reasoning",["deductive reasoning","a counterexample","a biconditional statement"],"Reasoning from a few examples to a general rule is inductive.","",()=>flowH(["Several\nexamples","Pattern you\nnotice","Likely\nconclusion"])],
+ ["All squares are rectangles. ABCD is a square. So ABCD is a rectangle. This is\u2026","deductive reasoning",["inductive reasoning","a counterexample","a conjecture"],"Using facts and definitions to reach a certain conclusion is deductive.","",()=>flowH(["Facts and\ndefinitions","Logical\nsteps","Certain\nconclusion"])],
+ ["After seeing that three triangles you drew have angle sums of 180\u00B0, you conclude every triangle does. This is\u2026","inductive reasoning",["deductive reasoning","a theorem","a proof"],"It is based on a pattern in a few examples.","",()=>flowH(["Several\nexamples","Pattern you\nnotice","Likely\nconclusion"])],
+ ["Because a \u2225 b and \u22201 and \u22202 are corresponding angles, \u22201 \u2245 \u22202 by the Corresponding Angles Theorem. This is\u2026","deductive reasoning",["inductive reasoning","a conjecture","a counterexample"],"A theorem is applied to a given fact.","",()=>flowH(["Facts and\ndefinitions","Logical\nsteps","Certain\nconclusion"])]
+])
+];
+
+/* =================== CHAPTER 3 =================== */
+GENS[3]=[
+{skill:"Angle pairs and transversals",d:1,f(){const k=pick(Object.keys(CAT)),pr=shuffle(pick(CAT[k]));
+  const w=shuffle(Object.keys(NAME).filter(x=>x!==k)).slice(0,3).map(x=>NAME[x]);
+  return Q({skill:"Angle pairs and transversals",q:`In the figure, lines a and b are cut by transversal t. What is the relationship between \u2220${pr[0]} and \u2220${pr[1]}?`,fig:tfig(pr),correct:NAME[k],wrongs:w,
+  hints:["Are both angles between lines a and b (interior) or outside them (exterior)? Are they on the same side of the transversal or opposite sides?"],sol:`\u2220${pr[0]} and \u2220${pr[1]} are ${NAME[k].toLowerCase()}.`})}},
+{skill:"Parallel lines and angle measures",d:2,f(){const k=pick(["corr","altint","altext","cons"]),pr=shuffle(pick(CAT[k])),A=pr[0],B=pr[1];let x,p,q,r,s,eqn,why;
+  if(k!=="cons"){r=R(1,4);const d=R(1,2);p=r+d;q=R(5,20);x=R(6,18);s=q+d*x;eqn=`${p}x + ${q} = ${r}x + ${s}`;why=`${NAME[k]} are congruent when lines are parallel, so set the measures equal.`}
+  else{p=R(1,3);r=R(1,3);q=R(5,20);x=R(10,20);s=180-(p+r)*x-q;eqn=`(${p}x + ${q}) + (${r}x + ${s}) = 180`;why="Consecutive interior angles are supplementary when lines are parallel, so the measures add to 180\u00B0."}
+  return Q({skill:"Parallel lines and angle measures",q:`Lines a and b are parallel. m\u2220${A} = (${p}x + ${q})\u00B0 and m\u2220${B} = (${r}x + ${s})\u00B0. What is x?`,fig:tfig([A,B]),correct:x,wrongs:nw(x,[x+2,x-2,x*2]),
+  hints:[why,`Equation: ${eqn}`],sol:`${eqn} gives x = ${x}.`})}},
+{skill:"Parallel lines and angle measures",d:3,f(){const k=pick(["corr","altint","altext","cons"]),pr=shuffle(pick(CAT[k])),A=pr[0],B=pr[1];let x,p,q,r,s,m;
+  if(k!=="cons"){r=R(1,4);const d=R(1,2);p=r+d;q=R(5,20);x=R(6,18);s=q+d*x}else{p=R(1,3);r=R(1,3);q=R(5,20);x=R(10,20);s=180-(p+r)*x-q}
+  m=p*x+q;
+  return Q({skill:"Parallel lines and angle measures",q:`Lines a and b are parallel. m\u2220${A} = (${p}x + ${q})\u00B0 and m\u2220${B} = (${r}x + ${s})\u00B0. What is m\u2220${A}?`,fig:tfig([A,B]),unit:"\u00B0",correct:m,wrongs:nw(m,[180-m,x,r*x+s===m?m+10:r*x+s]),
+  hints:[k!=="cons"?"These angles are congruent, so set the expressions equal and solve for x.":"These angles are supplementary, so their measures add to 180\u00B0.","After finding x, substitute it back into the expression for \u2220"+A+"."],
+  sol:`x = ${x}, so m\u2220${A} = ${p}(${x}) + ${q} = ${m}\u00B0.`})}},
+{skill:"Proving lines parallel",d:3,f(){const k=pick(["corr","altint","altext","cons"]),pr=shuffle(pick(CAT[k])),A=pr[0],B=pr[1],ok=Math.random()<.6;
+  const m=R(50,130),m1=m;let m2=k==="cons"?180-m:m;if(!ok)m2+=pick([-1,1])*R(8,20);
+  const others=shuffle(Object.keys(CONV).filter(x=>x!==k)).slice(0,2);
+  const c=ok?`The lines are parallel by the ${CONV[k]}.`:"The lines are not parallel.";
+  const wr=ok?[`The lines are parallel by the ${CONV[others[0]]}.`,`The lines are parallel by the ${CONV[others[1]]}.`,"The lines are not parallel."]:[`The lines are parallel by the ${CONV[k]}.`,`The lines are parallel by the ${CONV[others[0]]}.`,`The lines are parallel by the ${CONV[others[1]]}.`];
+  return Q({skill:"Proving lines parallel",q:`In the figure, m\u2220${A} = ${m1}\u00B0 and m\u2220${B} = ${m2}\u00B0. Which statement is correct?`,fig:tfig([A,B]),correct:c,wrongs:wr,
+  hints:[`\u2220${A} and \u2220${B} are ${NAME[k].toLowerCase()}.`,k==="cons"?"For this pair, the lines are parallel only if the angles add to 180\u00B0.":"For this pair, the lines are parallel only if the angles are equal."],
+  sol:ok?`The angles are ${NAME[k].toLowerCase()} and ${k==="cons"?"supplementary":"congruent"}, so the ${CONV[k]} proves a \u2225 b.`:`The angles are ${NAME[k].toLowerCase()} but ${k==="cons"?"do not add to 180\u00B0":"are not congruent"}, so the lines are not parallel.`})}},
+{skill:"Slope",d:1,f(){const x1=R(-6,5),y1=R(-6,5),dx=nz(-6,6),dy=nz(-6,6),x2=x1+dx,y2=y1+dy;
+  return Q({skill:"Slope",fig:plane({lines:[{a:[x1,y1],b:[x2,y2]}],pts:[{p:[x1,y1],l:"A"},{p:[x2,y2],l:"B"}],segs:[[[x1,y1],[x2,y1],{d:1,c:ORG}],[[x2,y1],[x2,y2],{d:1,c:ORG}]]}),q:`What is the slope of the line through ${P(x1,y1)} and ${P(x2,y2)}?`,correct:fr(dy,dx),wrongs:[fr(dx,dy),fr(-dy,dx),fr(dy+1,dx)],
+  hints:["Slope = rise over run = (y\u2082 \u2212 y\u2081)/(x\u2082 \u2212 x\u2081).",`Rise: ${sg(y2)} \u2212 (${sg(y1)}). Run: ${sg(x2)} \u2212 (${sg(x1)}).`],sol:`m = ${sg(dy)}/${sg(dx)} = ${fr(dy,dx)}.`})}},
+{skill:"Slope",d:2,f(){const [n0,d0]=pick([[2,3],[3,4],[2,5],[3,2],[4,3],[5,2],[1,3],[5,3],[3,5]]),n=n0*pick([1,-1]),d=d0,k=pick([1,2]),x1=R(-5,3),y1=R(-5,3),x2=x1+d*k,y2=y1+n*k;
+  return Q({skill:"Slope",fig:plane({lines:[{a:[x1,y1],b:[x2,y2]}],pts:[{p:[x1,y1],l:"A"},{p:[x2,y2],l:"B"}]}),q:`A line passes through ${P(x1,y1)} and ${P(x2,y2)}. What is the slope of a line perpendicular to it?`,correct:fr(-d,n),wrongs:[fr(d,n),fr(-n,d),fr(n,d)],
+  hints:["Find the slope of the given line first.","Perpendicular slopes are negative reciprocals: flip the fraction and change the sign."],sol:`The given slope is ${fr(n,d)}. The negative reciprocal is ${fr(-d,n)}.`})}},
+{skill:"Equations of lines",d:2,f(){const m=nz(-5,5),c=R(-6,6),p=nz(-4,4),q=nz(-6,6),b=q-m*p;
+  return Q({skill:"Equations of lines",fig:plane({lines:[{a:[0,c],b:[1,c+m],c:BLUE}],pts:[{p:[p,q],l:"P"}]}),q:`Which is the equation of the line through ${P(p,q)} that is parallel to ${eq(m,1,c)}?`,correct:eq(m,1,b),wrongs:[eq(m,1,q),eq(-m,1,q+m*p),eq(m,1,q+m*p)],
+  hints:["Parallel lines have the same slope.",`Use y = ${m}x + b with the point ${P(p,q)} to find b.`],sol:`The slope is ${m}. Substitute: ${sg(q)} = ${m}(${sg(p)}) + b, so b = ${b}. The equation is ${eq(m,1,b)}.`})}},
+{skill:"Equations of lines",d:3,f(){const [n0,d0]=pick([[2,3],[3,2],[1,2],[3,4],[2,5],[4,3]]),n=n0,d=d0,k=nz(-3,3),p=n*k,q=R(-6,6),c=R(-5,5),b=q+d*k;
+  return Q({skill:"Equations of lines",fig:plane({lines:[{a:[0,c],b:[d,c+n],c:BLUE}],pts:[{p:[p,q],l:"P"}]}),q:`Which is the equation of the line through ${P(p,q)} that is perpendicular to ${eq(n,d,c)}?`,correct:eq(-d,n,b),wrongs:[eq(d,n,q-d*k),eq(-d,n,q),eq(-d,n,q-d*k)],
+  hints:["Find the negative reciprocal of the given slope.",`Substitute ${P(p,q)} into y = mx + b to solve for b.`],sol:`The new slope is ${fr(-d,n)}. Then ${sg(q)} = ${fr(-d,n)}(${sg(p)}) + b gives b = ${b}. The equation is ${eq(-d,n,b)}.`})}},
+{skill:"Slope",d:2,f(){const t=pick(["Parallel","Perpendicular","Neither"]);let s1,s2;
+  const b1=R(-6,6);let b2=R(-6,6);
+  if(t==="Parallel"){const n=nz(-4,4),d=pick([1,1,2,3]);s1=[n,d];s2=[n,d];while(b2===b1)b2=R(-6,6)}
+  else if(t==="Perpendicular"){const [n,d]=pick([[2,3],[3,4],[1,2],[3,2],[4,3],[2,5]]);s1=[n*pick([1,-1]),d];s2=[-s1[1],s1[0]]}
+  else{let m1,m2;do{m1=nz(-4,4);m2=nz(-4,4)}while(m1===m2||m1*m2===-1);s1=[m1,1];s2=[m2,1]}
+  return Q({skill:"Slope",fig:plane({view:[-10,10,-10,10],lines:[{a:[0,b1],b:[s1[1],b1+s1[0]],c:BLUE},{a:[0,b2],b:[s2[1],b2+s2[0]],c:ORG}],texts:[{p:[-9.5,9],t:"first line",c:BLUE,a:"start"},{p:[-9.5,7.5],t:"second line",c:ORG,a:"start"}]}),q:`Are the lines ${eq(s1[0],s1[1],b1)} and ${eq(s2[0],s2[1],b2)} parallel, perpendicular, or neither?`,keep:true,opts:["Parallel","Perpendicular","Neither"],correct:t,wrongs:[],
+  hints:["Compare the slopes. Equal slopes mean parallel. Slopes that multiply to \u22121 mean perpendicular."],sol:`The slopes are ${fr(s1[0],s1[1])} and ${fr(s2[0],s2[1])}, so the lines are ${t==="Neither"?"neither parallel nor perpendicular":t.toLowerCase()}.`})}},
+stat("Parallel and perpendicular lines",1,[
+ ["Lines that are not coplanar and do not intersect are called\u2026","skew lines",["parallel lines","perpendicular lines","intersecting lines"],"Parallel lines are coplanar; these are not.","",figSkew],
+ ["If a transversal is perpendicular to one of two parallel lines, then it is ___ to the other.","perpendicular",["parallel","skew","congruent"],"It makes a 90\u00B0 angle with the first line, so it also makes a 90\u00B0 angle with the second.","",figPerpT],
+ ["Parallel Postulate: through a point not on a line, there is ___ line parallel to the given line.","exactly one",["no","exactly two","infinitely many"],"Think about how many parallel lines you could draw through that point.","",figParPost],
+ ["What is the slope of a vertical line?","undefined",["0","1","\u22121"],"A vertical line has no run, so you would divide by zero.","",figSlopeV],
+ ["What is the slope of a horizontal line?","0",["undefined","1","\u22121"],"A horizontal line has no rise.","",figSlopeH],
+ ["The product of the slopes of two nonvertical perpendicular lines is\u2026","\u22121",["1","0","undefined"],"The slopes are negative reciprocals.","",figPerpSlopes]
+])
+];
+
+/* =================== CHAPTER 4 =================== */
+const OPS=[
+ ()=>{const a=nz(-5,5),b=nz(-5,5);return {t:`translate by ${V(a,b)}`,f:([x,y])=>[x+a,y+b]}},
+ ()=>({t:"reflect across the x-axis",f:([x,y])=>[x,-y]}),
+ ()=>({t:"reflect across the y-axis",f:([x,y])=>[-x,y]}),
+ ()=>({t:"reflect across the line y = x",f:([x,y])=>[y,x]}),
+ ()=>({t:"rotate 90\u00B0 counterclockwise about the origin",f:([x,y])=>[-y,x]}),
+ ()=>({t:"rotate 180\u00B0 about the origin",f:([x,y])=>[-x,-y]}),
+ ()=>({t:"dilate by a scale factor of 2 (center at the origin)",f:([x,y])=>[2*x,2*y]})];
+const ROT={90:[([x,y])=>[-y,x],"(x, y) \u2192 (\u2212y, x)"],180:[([x,y])=>[-x,-y],"(x, y) \u2192 (\u2212x, \u2212y)"],270:[([x,y])=>[y,-x],"(x, y) \u2192 (y, \u2212x)"]};
+const KS=[[2,1],[3,1],[4,1],[1,2],[1,3],[3,2],[2,3]];
+
+GENS[4]=[
+{skill:"Translations",d:1,f(){const [x,y]=[R(-7,7),R(-7,7)],a=nz(-6,6),b=nz(-6,6),vec=Math.random()<.5;
+  const desc=vec?`the translation by vector ${V(a,b)}`:`the translation (x, y) \u2192 (x ${a<0?"\u2212":"+"} ${Math.abs(a)}, y ${b<0?"\u2212":"+"} ${Math.abs(b)})`;
+  return Q({skill:"Translations",fig:plane({pts:[{p:[x,y],l:"A"}]}),q:`What is the image of ${P(x,y)} under ${desc}?`,correct:P(x+a,y+b),wrongs:[P(x-a,y-b),P(x+b,y+a),P(x+a,y-b)],
+  hints:["A translation adds the same amount to every x-coordinate and the same amount to every y-coordinate."],sol:`(${sg(x)} + ${sg(a)}, ${sg(y)} + ${sg(b)}) = ${P(x+a,y+b)}.`})}},
+{skill:"Translations",d:2,f(){const x=R(-7,7),y=R(-7,7);let a,b;do{a=nz(-7,7);b=nz(-7,7)}while(Math.abs(a)===Math.abs(b));
+  return Q({skill:"Translations",fig:plane({pts:[{p:[x,y],l:"A"},{p:[x+a,y+b],l:"A\u2032",c:"img"}],segs:[[[x,y],[x+a,y+b],{m:"arrb",c:BLUE,d:1}]]}),q:`A translation maps A${P(x,y)} to A\u2032${P(x+a,y+b)}. Which vector describes the translation?`,correct:V(a,b),wrongs:[V(-a,-b),V(b,a),V(x+a+x,y+b+y)],
+  hints:["Subtract: image coordinates minus original coordinates, for x and for y."],sol:`${sg(x+a)} \u2212 (${sg(x)}) = ${sg(a)} and ${sg(y+b)} \u2212 (${sg(y)}) = ${sg(b)}, so the vector is ${V(a,b)}.`})}},
+{skill:"Reflections",d:1,f(){const [x,y]=rp(),m=pick([["the x-axis",[x,-y],"(x, y) \u2192 (x, \u2212y)"],["the y-axis",[-x,y],"(x, y) \u2192 (\u2212x, y)"]]);
+  return Q({skill:"Reflections",fig:plane({pts:[{p:[x,y],l:"A"}],lines:[m[0]==="the x-axis"?{a:[0,0],b:[1,0],c:ORG,w:3.5}:{a:[0,0],b:[0,1],c:ORG,w:3.5}]}),q:`What is the image of ${P(x,y)} after a reflection across ${m[0]}?`,correct:PA(m[1]),wrongs:[PA(m[0]==="the x-axis"?[-x,y]:[x,-y]),PA([-x,-y]),PA([y,x])],
+  hints:["Reflecting across the x-axis changes the sign of y. Reflecting across the y-axis changes the sign of x."],sol:`Rule: ${m[2]}. The image is ${PA(m[1])}.`})}},
+{skill:"Reflections",d:2,f(){const [x,y]=rp(),m=pick([["the line y = x",[y,x],"(x, y) \u2192 (y, x)",[-y,-x]],["the line y = \u2212x",[-y,-x],"(x, y) \u2192 (\u2212y, \u2212x)",[y,x]]]);
+  return Q({skill:"Reflections",fig:plane({pts:[{p:[x,y],l:"A"}],lines:[{a:[0,0],b:[1,m[0]==="the line y = x"?1:-1],c:ORG,w:3,d:1}]}),q:`What is the image of ${P(x,y)} after a reflection across ${m[0]}?`,correct:PA(m[1]),wrongs:[PA(m[3]),PA([x,-y]),PA([-x,y])],
+  hints:["Reflecting across y = x swaps the coordinates. Across y = \u2212x, swap them and change both signs."],sol:`Rule: ${m[2]}. The image is ${PA(m[1])}.`})}},
+{skill:"Reflections",d:3,f(){const x=R(-6,6),y=R(-6,6),k=nz(-4,4),h=Math.random()<.5;
+  if(h)return Q({skill:"Reflections",fig:plane({pts:[{p:[x,y],l:"A"}],lines:[{a:[k,0],b:[k,1],c:ORG,w:3,d:1}]}),q:`What is the image of ${P(x,y)} after a reflection across the line x = ${sg(k)}?`,correct:P(2*k-x,y),wrongs:[P(-x,y),P(k-x,y),P(2*k+x,y)],
+    hints:["The line x = k is vertical. The y-coordinate stays the same.","The image is the same distance on the other side of the line: x\u2032 = 2k \u2212 x."],sol:`x\u2032 = 2(${sg(k)}) \u2212 (${sg(x)}) = ${sg(2*k-x)}, y stays ${sg(y)}. The image is ${P(2*k-x,y)}.`});
+  return Q({skill:"Reflections",fig:plane({pts:[{p:[x,y],l:"A"}],lines:[{a:[0,k],b:[1,k],c:ORG,w:3,d:1}]}),q:`What is the image of ${P(x,y)} after a reflection across the line y = ${sg(k)}?`,correct:P(x,2*k-y),wrongs:[P(x,-y),P(x,k-y),P(x,2*k+y)],
+    hints:["The line y = k is horizontal. The x-coordinate stays the same.","The image is the same distance on the other side of the line: y\u2032 = 2k \u2212 y."],sol:`y\u2032 = 2(${sg(k)}) \u2212 (${sg(y)}) = ${sg(2*k-y)}, x stays ${sg(x)}. The image is ${P(x,2*k-y)}.`})}},
+{skill:"Rotations",d:2,f(){const [x,y]=rp(),deg=pick([90,180,270]),dir=deg===180?"":pick([" clockwise"," counterclockwise"]);
+  const ccw=dir===" clockwise"?360-deg:deg;const img=ROT[ccw][0]([x,y]);
+  const pool=[ROT[90][0]([x,y]),ROT[180][0]([x,y]),ROT[270][0]([x,y]),[x,-y]].map(PA).filter(v=>v!==PA(img));
+  return Q({skill:"Rotations",fig:(()=>{const r=Math.hypot(x,y),a0=Math.atan2(y,x),sgn=dir===" clockwise"?-1:1,ap=[];for(let k=0;k<=deg/5;k++){const an=a0+sgn*k*5*Math.PI/180;ap.push([r*Math.cos(an),r*Math.sin(an)])}return plane({pts:[{p:[x,y],l:"A"},{p:[0,0],l:"O",c:"mid",pos:"b"}],segs:[[[0,0],[x,y],{d:1}]],paths:[{pts:ap,c:BLUE,arrow:1}]})})(),q:`What is the image of ${P(x,y)} after a rotation of ${deg}\u00B0${dir} about the origin?`,correct:PA(img),wrongs:pool,
+  hints:["Counterclockwise rules: 90\u00B0 \u2192 (\u2212y, x); 180\u00B0 \u2192 (\u2212x, \u2212y); 270\u00B0 \u2192 (y, \u2212x).",dir===" clockwise"?`${deg}\u00B0 clockwise is the same as ${ccw}\u00B0 counterclockwise.`:"Use the rule that matches the angle."],
+  sol:`${deg}\u00B0${dir} = ${ccw}\u00B0 counterclockwise, rule ${ROT[ccw][1]}. The image is ${PA(img)}.`})}},
+{skill:"Dilations",d:1,f(){const [num,den]=pick(KS),x=den*nz(-4,4),y=den*nz(-4,4),ix=x*num/den,iy=y*num/den,k=fr(num,den);
+  return Q({skill:"Dilations",fig:plane({pts:[{p:[0,0],l:"O",c:"mid",pos:"b"},{p:[x,y],l:"P"}],segs:[[[0,0],[x,y],{d:1}]]}),q:`What is the image of ${P(x,y)} after a dilation with center at the origin and scale factor ${k}?`,correct:P(ix,iy),wrongs:[P(ix,y),P(x,iy),P(x+num,y+num)],
+  hints:["A dilation centered at the origin multiplies both coordinates by the scale factor: (x, y) \u2192 (kx, ky)."],sol:`(${k})(${sg(x)}) = ${sg(ix)} and (${k})(${sg(y)}) = ${sg(iy)}. The image is ${P(ix,iy)}.`})}},
+{skill:"Dilations",d:2,f(){const [num,den]=pick(KS),x=den*nz(-4,4),y=den*nz(-4,4),k=fr(num,den);
+  return Q({skill:"Dilations",fig:plane({pts:[{p:[0,0],l:"O",c:"mid",pos:"b"},{p:[x,y],l:"A"},{p:[x*num/den,y*num/den],l:"A\u2032",c:"img",pos:"l"}],segs:[[[0,0],[x*num/den,y*num/den],{d:1}],[[0,0],[x,y],{d:1}]]}),q:`A dilation centered at the origin maps A${P(x,y)} to A\u2032${P(x*num/den,y*num/den)}. What is the scale factor?`,correct:k,wrongs:[fr(den,num),fr(num+1,den),fr(num,den+1)],
+  hints:["Divide an image coordinate by the matching original coordinate: k = x\u2032 \u00F7 x."],sol:`k = ${sg(x*num/den)} \u00F7 ${sg(x)} = ${k}.`})}},
+{skill:"Dilations",d:2,f(){const [num,den]=pick(KS),L=den*R(2,9),nl=L*num/den,k=fr(num,den);
+  return Q({skill:"Dilations",fig:(()=>{const kk=num/den,w1=220/Math.max(1,kk),w2=w1*kk;return svgw(300,115,ln(40,35,40+w1,35,{w:4})+ln(40,27,40,43)+ln(40+w1,27,40+w1,43)+tx(40+w1/2,20,"length "+L,{w:700})+ln(40,88,40+w2,88,{w:4,c:BLUE,d:1})+ln(40,80,40,96,{c:BLUE})+ln(40+w2,80,40+w2,96,{c:BLUE})+tx(40+w2/2,73,"image: ?",{c:BLUE,w:700}),"A segment and its dilated image")})(),q:`A segment has length ${L}. After a dilation with scale factor ${k}, what is the length of the image?`,correct:nl,wrongs:nw(nl,[L+num,L,nl+den]),
+  hints:["Lengths are multiplied by the scale factor."],sol:`${L} \u00D7 ${k} = ${nl}.`})}},
+{skill:"Dilations",d:3,f(){const k=pick([2,3,4,0.5]),A=8*R(1,6),n=A*k*k;
+  return Q({skill:"Dilations",fig:(()=>{const w1=100/Math.max(1,k),h1=w1*.8,w2=w1*k,h2=h1*k,bx=50,by=125,x2=bx+w1+40;return svgw(300,150,poly([[bx,by],[bx+w1,by],[bx,by-h1]],{f:"rgba(14,124,134,.16)"})+tx(Math.max(bx+w1/2,48),by+18,"area "+A,{w:700})+poly([[x2,by],[x2+w2,by],[x2,by-h2]],{c:BLUE,d:1})+tx(x2+w2/2,by+18,"area ?",{c:BLUE,w:700}),"A triangle and its dilated image")})(),q:`A triangle has an area of ${A} square units. It is dilated by a scale factor of ${k===0.5?"1/2":k}. What is the area of the image?`,correct:n,wrongs:[A*k,A*k**3,A*(k+1)],
+  hints:["Lengths scale by k, but area scales by k\u00B2."],sol:`Area scales by k\u00B2 = ${k===0.5?"1/4":k*k}. New area = ${A} \u00D7 ${k===0.5?"1/4":k*k} = ${n}.`})}},
+{skill:"Dilations",d:3,f(){const k=pick([2,3]);let cx=nz(-4,4),cy=nz(-4,4),x,y;do{x=R(-6,6);y=R(-6,6)}while(x===cx||y===cy);
+  const ix=cx+k*(x-cx),iy=cy+k*(y-cy);
+  return Q({skill:"Dilations",fig:plane({pts:[{p:[cx,cy],l:"C",c:"mid",pos:"b"},{p:[x,y],l:"P"}],segs:[[[cx,cy],[x,y],{d:1}]]}),q:`Point P${P(x,y)} is dilated by a scale factor of ${k} with center C${P(cx,cy)}. What is the image of P?`,correct:P(ix,iy),wrongs:[P(k*x,k*y),P(cx-k*(x-cx),cy-k*(y-cy)),P(k*(x-cx),k*(y-cy))],
+  hints:["Because the center is not the origin, measure from the center: find P \u2212 C first.","Multiply that difference by k, then add C back."],sol:`P \u2212 C = ${P(x-cx,y-cy)}. Times ${k}: ${P(k*(x-cx),k*(y-cy))}. Add C: ${P(ix,iy)}.`})}},
+{skill:"Compositions",d:3,f(){let o1,o2,pt,c,rev,a,b,g=0;
+  do{const i=R(0,6);let j;do{j=R(0,6)}while(j===i);o1=OPS[i]();o2=OPS[j]();pt=rp();a=o1.f(pt);c=o2.f(a);b=o2.f(pt);rev=o1.f(b);g++}
+  while(g<60&&new Set([PA(c),PA(rev),PA(a),PA(b)]).size<4);
+  return Q({skill:"Compositions",fig:plane({pts:[{p:pt,l:"A"}]}),q:`Point A${PA(pt)} is transformed by a composition: first ${o1.t}, then ${o2.t}. What are the coordinates of A\u2033?`,correct:PA(c),wrongs:[PA(rev),PA(a),PA(b)],
+  hints:["Do the transformations in the order given. The image from the first one is the starting point for the second.",`After the first step you should have ${PA(a)}.`],sol:`Step 1: ${PA(pt)} \u2192 ${PA(a)}. Step 2: ${PA(a)} \u2192 ${PA(c)}.`})}},
+{skill:"Identifying transformations",d:2,f(){const T=[["Reflection across the x-axis",([x,y])=>[x,-y]],["Reflection across the y-axis",([x,y])=>[-x,y]],["Rotation of 180\u00B0 about the origin",([x,y])=>[-x,-y]],["Reflection across the line y = x",([x,y])=>[y,x]]];
+  const t=pick(T);let A=rp(),B=rp();while(PA(A)===PA(B))B=rp();
+  return Q({skill:"Identifying transformations",fig:plane({pts:[{p:A,l:"A"},{p:B,l:"B"},{p:t[1](A),l:"A\u2032",c:"img"},{p:t[1](B),l:"B\u2032",c:"img"}],segs:[[A,B],[t[1](A),t[1](B),{c:BLUE}]]}),q:`A transformation maps A${PA(A)} to A\u2032${PA(t[1](A))} and B${PA(B)} to B\u2032${PA(t[1](B))}. Which transformation is it?`,keep:true,opts:T.map(v=>v[0]),correct:t[0],wrongs:[],
+  hints:["Compare how the coordinates changed. Did one sign change, both signs change, or did the coordinates swap?"],sol:`${PA(A)} \u2192 ${PA(t[1](A))}, which matches: ${t[0]}.`})}},
+stat("Transformation concepts",1,[
+ ["Which transformation does NOT always preserve distance?","Dilation",["Translation","Reflection","Rotation"],"Rigid motions keep distances the same. A dilation changes size.","",fourfig],
+ ["A transformation that preserves distance and angle measure is called a\u2026","rigid motion",["dilation","stretch","scale drawing"],"Translations, reflections, and rotations are all of this type.","",fourfig],
+ ["Which transformation reverses the orientation of a figure?","Reflection",["Translation","Rotation","Dilation"],"Think about what happens to your left hand in a mirror.","",fourfig],
+ ["Two reflections across parallel lines are equivalent to a single\u2026","translation",["rotation","reflection","dilation"],"The image slides in one direction, by twice the distance between the lines.","",parfig],
+ ["Two reflections across intersecting lines are equivalent to a single\u2026","rotation",["translation","reflection","dilation"],"The center of rotation is where the lines meet.","",intfig],
+ ["A dilation with scale factor 0 < k < 1 produces\u2026","a smaller similar figure",["a larger similar figure","a congruent figure","a reflected figure"],"A scale factor less than 1 shrinks the figure.","",shrinkfig],
+ ["Which composition is equivalent to a 180\u00B0 rotation about the origin?","Reflect across the x-axis, then across the y-axis",["Reflect across the x-axis, then translate","Reflect across the line y = x","Reflect across the x-axis only"],"Try a point: (3, 2) \u2192 (3, \u22122) \u2192 (\u22123, \u22122).","",comp180fig]
+])
+];
+/*GEN-END*/
+
+/* ---------- chapter info ---------- */
+const CH=[null,
+ {n:"Chapter 1",t:"Basics of Geometry",c:"#0E7C86",d:"Segments, midpoint and distance, angles and angle pairs, perimeter and area in the coordinate plane.",
+  ref:["Segment Addition: if B is between A and C, then AB + BC = AC.","Midpoint = ((x\u2081 + x\u2082)/2, (y\u2081 + y\u2082)/2). Distance = \u221A((x\u2082 \u2212 x\u2081)\u00B2 + (y\u2082 \u2212 y\u2081)\u00B2).","Angle Addition: m\u2220ABD + m\u2220DBC = m\u2220ABC.","Complementary angles add to 90\u00B0. Supplementary angles add to 180\u00B0. Vertical angles are congruent.","An angle bisector splits an angle into two equal angles.","Rectangle: P = 2(b + h), A = bh. Triangle: A = \u00BDbh."]},
+ {n:"Chapter 2",t:"Reasoning and Proofs",c:"#8A3FA0",d:"Conditional statements, inductive and deductive reasoning, properties of equality, and reasons in proofs.",
+  ref:["Conditional: If p, then q. Converse: If q, then p. Inverse: If not p, then not q. Contrapositive: If not q, then not p.","The contrapositive always has the same truth value as the original conditional.","A counterexample makes the hypothesis true and the conclusion false.","Inductive reasoning uses a pattern from examples. Deductive reasoning uses facts, definitions, and theorems.","Law of Syllogism: p \u2192 q and q \u2192 r gives p \u2192 r. Law of Detachment: p \u2192 q and p true gives q true.","Properties of equality: reflexive, symmetric, transitive, substitution, addition, subtraction, multiplication, division, distributive."]},
+ {n:"Chapter 3",t:"Parallel and Perpendicular Lines",c:"#A85F00",d:"Angle pairs and transversals, proving lines parallel, slopes, and writing equations of parallel and perpendicular lines.",
+  ref:["Parallel lines: corresponding, alternate interior, and alternate exterior angles are congruent. Consecutive interior angles are supplementary.","The converses of these theorems prove two lines are parallel.","Slope m = (y\u2082 \u2212 y\u2081)/(x\u2082 \u2212 x\u2081). Horizontal lines have slope 0. Vertical lines have undefined slope.","Parallel lines have equal slopes. Perpendicular lines have slopes that are negative reciprocals (product \u22121).","Slope-intercept form: y = mx + b. Plug in a point to find b."]},
+ {n:"Chapter 4",t:"Transformations",c:"#2B5BD7",d:"Translations, reflections, rotations, dilations, and compositions.",
+  ref:["Translation: (x, y) \u2192 (x + a, y + b), vector \u27E8a, b\u27E9.","Reflections: x-axis (x, \u2212y). y-axis (\u2212x, y). y = x (y, x). y = \u2212x (\u2212y, \u2212x). Across x = k: x\u2032 = 2k \u2212 x. Across y = k: y\u2032 = 2k \u2212 y.","Rotations about the origin, counterclockwise: 90\u00B0 (\u2212y, x). 180\u00B0 (\u2212x, \u2212y). 270\u00B0 (y, \u2212x). 90\u00B0 clockwise = 270\u00B0 counterclockwise.","Dilation about the origin: (x, y) \u2192 (kx, ky). Lengths scale by k and areas by k\u00B2.","Rigid motions (translation, reflection, rotation) keep distance and angle measure. Dilations do not.","In a composition, do the transformations in order. Changing the order can change the answer."]}
+];
+
+/* ---------- state ---------- */
+const KEY="geoMidyearHub_v1";
+const def=()=>({name:"",period:"",level:2,points:0,days:[],zones:{1:{c:0,best:0},2:{c:0,best:0},3:{c:0,best:0},4:{c:0,best:0}},skills:{},recent:{1:[],2:[],3:[],4:[]},plan:{},bossBest:0,diag:null});
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY));if(j)return Object.assign(def(),j)}catch(e){}return def()}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today=()=>new Date().toLocaleDateString("en-CA");
+const $=id=>document.getElementById(id);
+function show(id){["welcome","home","quiz","result"].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0)}
+
+/* ---------- run builder ---------- */
+function pool(c,level){return GENS[c].filter(g=>level===1?g.d<=2:level===3?g.d>=2:true)}
+function build(c,n,level){
+  const items=pool(c,level);let seq=[],out=[],seen=new Set(),guard=0;
+  while(out.length<n&&guard++<600){if(!seq.length)seq=shuffle(items);const g=seq.pop();const q=g.f();const key=q.q+"|"+q.opts.join("|");if(seen.has(key))continue;seen.add(key);q.ch=c;out.push(q)}
+  return out;
+}
+let run=null;
+function startRun(type,ch){
+  let qs=[];
+  if(type==="zone")qs=build(ch,8,S.level);
+  else if(type==="diag")qs=[1,2,3,4].flatMap(c=>build(c,3,S.level));
+  else qs=shuffle([1,2,3,4].flatMap(c=>build(c,5,S.level)));
+  run={type,ch,qs,i:0,score:0,pts:0,res:[],hint:0,done:false};
+  show("quiz");renderQ();
+}
+function renderQ(){
+  const q=run.qs[run.i],ch=CH[q.ch];run.hint=0;run.done=false;$("leaveBox").hidden=true;
+  $("qprog").textContent=`Question ${run.i+1} of ${run.qs.length}`;
+  $("qbar").style.width=(run.i/run.qs.length*100)+"%";
+  $("qcard").innerHTML=`<p class="tag" style="--cc:${ch.c}">${ch.n}: ${q.skill}</p>
+   <p class="qtext">${q.q}</p>${q.fig}
+   <div class="opts" role="group" aria-label="Answer choices">${q.opts.map((o,k)=>`<button class="opt" data-act="ans" data-k="${k}"><span class="ltr">${"ABCD"[k]}</span><span>${o}</span><span class="mark"></span></button>`).join("")}</div>
+   <div class="hintbox" id="hintbox"></div>
+   <div class="row"><button class="ghost" id="hintBtn" data-act="hint">Show a hint (halves your points)</button></div>
+   <div id="fb" aria-live="polite"></div>`;
+  if(!q.hints.length)$("hintBtn").hidden=true;
+}
+function showHint(){
+  const q=run.qs[run.i];if(run.hint>=q.hints.length)return;
+  $("hintbox").insertAdjacentHTML("beforeend",`<p><b>Hint ${run.hint+1}:</b> ${q.hints[run.hint]}</p>`);run.hint++;
+  if(run.hint>=q.hints.length)$("hintBtn").hidden=true;
+}
+function answer(k){
+  if(run.done)return;run.done=true;
+  const q=run.qs[run.i],ok=k===q.ans,btns=[...document.querySelectorAll(".opt")];
+  btns.forEach((b,i)=>{b.disabled=true;if(i===q.ans){b.classList.add("right");b.querySelector(".mark").textContent="\u2713 Correct"}else if(i===k){b.classList.add("wrong");b.querySelector(".mark").textContent="\u2717 Your answer"}});
+  $("hintBtn").hidden=true;
+  const base=run.type==="boss"?15:10,pts=ok?(run.hint?Math.ceil(base/2):base):0;
+  run.pts+=pts;if(ok)run.score++;
+  run.res.push({skill:q.skill,ch:q.ch,ok});
+  const sk=S.skills[q.ch+"|"+q.skill]||(S.skills[q.ch+"|"+q.skill]={r:0,t:0});sk.t++;if(ok)sk.r++;
+  S.recent[q.ch].push(ok?1:0);if(S.recent[q.ch].length>15)S.recent[q.ch].shift();
+  S.points+=pts;save();
+  const last=run.i===run.qs.length-1;
+  $("fb").innerHTML=`<div class="fb ${ok?"ok":"bad"}"><strong>${ok?"\u2713 Correct":"\u2717 Not quite"}${ok?` (+${pts} points)`:`. The answer is ${"ABCD"[q.ans]}.`}</strong><p>${q.sol}</p></div><button class="primary" data-act="next">${last?"See results":"Next question"}</button>`;
+  $("fb").querySelector("button").focus();
+}
+function next(){run.i++;if(run.i>=run.qs.length)finish();else renderQ()}
+
+/* ---------- finish ---------- */
+function finish(){
+  const n=run.qs.length;let extra="",bonus=0;
+  if(!S.days.includes(today())){S.days.push(today());bonus=20;S.points+=bonus;extra=`<div class="toast">Practice day ${S.days.length} logged. +20 points.</div>`}
+  let msg="";
+  if(run.type==="zone"){const z=S.zones[run.ch];z.best=Math.max(z.best,run.score);
+    if(run.score>=6){z.c=1;msg=`<p><b>Zone cleared.</b> You scored at least 6 out of 8.</p>`}else msg=`<p>You need 6 out of 8 to clear this zone. Check the quick reference, then try again with fresh questions.</p>`}
+  if(run.type==="boss"){S.bossBest=Math.max(S.bossBest,run.score);msg=`<p>Best Boss Battle score: <b>${S.bossBest}</b> out of 20.</p>`}
+  if(run.type==="diag"){S.diag=[1,2,3,4].map(c=>run.res.filter(r=>r.ch===c&&r.ok).length);
+    const need=[1,2,3,4].filter(c=>S.diag[c-1]<=1).map(c=>CH[c].n);
+    msg=need.length?`<p><b>Start with:</b> ${need.join(", ")}. These had the most misses.</p>`:`<p>You did well on all four chapters. Go for the zones to lock in your speed, then take on the Boss Battle.</p>`}
+  save();sync();
+  const bySkill={};run.res.forEach(r=>{const k=r.ch+"|"+r.skill;(bySkill[k]=bySkill[k]||{ch:r.ch,s:r.skill,r:0,t:0});bySkill[k].t++;if(r.ok)bySkill[k].r++});
+  const weak=Object.values(bySkill).filter(v=>v.r<v.t&&v.r/v.t<.7).sort((a,b)=>a.r/a.t-b.r/b.t);
+  const rows=Object.values(bySkill).map(v=>`<li>${CH[v.ch].n}: ${v.s}: ${v.r} of ${v.t} ${v.r===v.t?"\u2713":""}</li>`).join("");
+  $("result").innerHTML=`<div class="sheet"><h2>${run.type==="diag"?"Diagnostic results":run.type==="boss"?"Boss Battle results":CH[run.ch].n+" practice results"}</h2>
+   <p class="big" style="margin-top:12px">${run.score}<span class="muted" style="font-size:1.6rem"> / ${n}</span></p>
+   <p>You earned <b>${run.pts}</b> points this round.</p>${extra}${msg}
+   ${weak.length?`<h3 style="margin-top:14px">Revisit these skills</h3><ul class="list">${weak.map(v=>`<li>${CH[v.ch].n}: <b>${v.s}</b> (${v.r} of ${v.t})</li>`).join("")}</ul>`:""}
+   <details><summary>Skill-by-skill breakdown</summary><ul class="list">${rows}</ul></details>
+   <div class="row" style="margin-top:16px">${run.type==="zone"?`<button class="primary" data-act="zone" data-c="${run.ch}">Try ${CH[run.ch].n} again</button>`:""}<button class="ghost" data-act="home">Back to the hub</button></div></div>`;
+  show("result");
+}
+
+/* ---------- leaderboard (optional) ---------- */
+function sync(){
+  if(!CONFIG.SCRIPT_URL)return;
+  try{fetch(CONFIG.SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"submit",name:S.name,period:S.period,points:S.points,days:S.days.length,boss:S.bossBest})}).catch(()=>{})}catch(e){}
+}
+async function loadBoard(){
+  const el=$("board");if(!el||!CONFIG.SCRIPT_URL)return;
+  try{const r=await fetch(CONFIG.SCRIPT_URL+"?action=leaderboard");const j=await r.json();
+    el.innerHTML=`<table><tr><th>Rank</th><th>Name</th><th>Period</th><th>Days</th><th>Points</th></tr>${j.slice(0,10).map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.period)}</td><td>${esc(p.days)}</td><td>${esc(p.points)}</td></tr>`).join("")}</table>`}
+  catch(e){el.textContent="The leaderboard could not load right now. Your points are still saved on this device."}
+}
+
+/* ---------- home ---------- */
+function ready(c){const a=S.recent[c];if(!a.length)return null;return Math.round(a.reduce((x,y)=>x+y,0)/a.length*100)}
+function label(p){return p===null?"Not started":p>=80?"Strong":p>=60?"Getting there":"Needs practice"}
+function renderHome(){
+  const bossOpen=[1,2,3,4].every(c=>S.zones[c].c);
+  const cleared=[1,2,3,4].filter(c=>S.zones[c].c).length;
+  $("home").innerHTML=`
+  <h1>Geometry Midyear Review</h1>
+  <p class="muted" style="margin:10px 0 0">Chapters 1 to 4. Aim for about 15 to 20 minutes a day over break. Your progress saves on this device.</p>
+  <div class="titleblock" aria-label="Student summary">
+    <div><div class="k">Student</div><div class="v">${esc(S.name)}</div></div>
+    <div><div class="k">Period</div><div class="v">${esc(S.period)}</div></div>
+    <div><div class="k">Days practiced</div><div class="v">${S.days.length}</div></div>
+    <div><div class="k">Points</div><div class="v">${S.points}</div></div>
+  </div>
+
+  <div class="sheet"><h2>Choose your level</h2>
+    <p class="muted small" style="margin:6px 0 0">You can change this any time. Questions are new every round.</p>
+    <div class="levels" role="group" aria-label="Level">
+      ${[[1,"Level 1: Build up","Shorter steps and more core skills."],[2,"Level 2: On target","A mix of everything on the exam."],[3,"Level 3: Stretch","Multi-step problems and challenge questions."]].map(l=>`<button class="lv" data-act="level" data-l="${l[0]}" aria-pressed="${S.level===l[0]}"><b>${l[1]}</b><span class="small">${l[2]}</span></button>`).join("")}
+    </div>
+  </div>
+
+  <div class="sheet"><h2>Step 1: Check where you stand</h2>
+    <p style="margin:6px 0 12px">Twelve mixed questions, three from each chapter. Use it to decide which zone to start with.</p>
+    <button class="primary" data-act="diag">${S.diag?"Take the diagnostic again":"Start the diagnostic"}</button>
+    ${S.diag?`<p class="small muted" style="margin:10px 0 0">Last result: ${S.diag.map((v,i)=>`Ch ${i+1}: ${v}/3`).join(", ")}</p>`:""}
+  </div>
+
+  <h2 style="margin-top:26px">Step 2: Clear each zone</h2>
+  <p class="muted" style="margin:6px 0 0">Score at least 6 out of 8 to clear a zone. ${cleared} of 4 cleared.</p>
+  ${[1,2,3,4].map(c=>{const p=ready(c),z=S.zones[c];return `
+  <div class="zone" style="--cc:${CH[c].c}">
+    <h3><span>${CH[c].n}: ${CH[c].t}</span><span class="state">${z.c?"\u2713 Cleared":label(p)}${p!==null?` (${p}%)`:""}</span></h3>
+    <p class="small muted" style="margin:6px 0 0">${CH[c].d}</p>
+    <div class="ruler" role="img" aria-label="Readiness ${p===null?"not started":p+" percent"}"><div class="fill" style="width:${p||0}%"></div><div class="ticks"></div></div>
+    <div class="row"><button class="primary" data-act="zone" data-c="${c}">Practice ${CH[c].n} (8 questions)</button>${z.best?`<span class="small muted">Best: ${z.best} of 8</span>`:""}</div>
+    <details><summary>Quick reference</summary><ul>${CH[c].ref.map(r=>`<li>${r}</li>`).join("")}</ul></details>
+  </div>`}).join("")}
+
+  <h2 style="margin-top:26px">Step 3: Boss Battle</h2>
+  <div class="zone boss">
+    <h3><span>Midyear Boss Battle</span><span class="state">${bossOpen?"Unlocked":"Locked"}</span></h3>
+    <p style="margin:6px 0 10px">Twenty mixed questions from all four chapters, in random order. Each correct answer is worth 15 points.</p>
+    ${bossOpen?`<button class="primary" data-act="boss">Start the Boss Battle</button>`:`<button class="primary" disabled>Clear all four zones to unlock</button>`}
+    ${S.bossBest?`<p class="small muted" style="margin:10px 0 0">Best score: ${S.bossBest} of 20</p>`:""}
+  </div>
+
+  ${CONFIG.SCRIPT_URL?`<div class="sheet lb"><h2>Break Challenge leaderboard</h2><p class="muted small" style="margin:6px 0 10px">Points come from correct answers plus 20 for each day you practice.</p><div id="board">Loading\u2026</div></div>`:""}
+  <p class="small muted" style="margin-top:20px">Not you? <button class="ghost" data-act="switch" style="padding:2px 10px">Switch student</button></p>
+  <div id="swBox" class="toast" hidden><p style="margin:0 0 8px">Switching students clears saved progress on this device.</p><div class="row"><button class="primary" data-act="switchYes">Yes, switch student</button><button class="ghost" data-act="switchNo">Cancel</button></div></div>`;
+  show("home");loadBoard();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b||b.disabled)return;const a=b.dataset.act;
+  if(a==="start"){const n=$("nm").value.trim(),p=$("pd").value;if(!n||!p){$("welcomeErr").textContent="Enter your name and choose your period to continue.";return}
+    S.name=n;S.period=p;save();renderHome()}
+  else if(a==="level"){S.level=+b.dataset.l;save();renderHome()}
+  else if(a==="diag")startRun("diag");
+  else if(a==="zone")startRun("zone",+b.dataset.c);
+  else if(a==="boss")startRun("boss");
+  else if(a==="ans")answer(+b.dataset.k);
+  else if(a==="hint")showHint();
+  else if(a==="next")next();
+  else if(a==="leave"){$("leaveBox").hidden=false;$("leaveBox").scrollIntoView({block:"nearest"})}
+  else if(a==="leaveNo")$("leaveBox").hidden=true;
+  else if(a==="leaveYes"){$("leaveBox").hidden=true;renderHome()}
+  else if(a==="home")renderHome();
+  else if(a==="switch")$("swBox").hidden=false;
+  else if(a==="switchNo")$("swBox").hidden=true;
+  else if(a==="switchYes"){S=def();save();$("nm").value="";$("pd").value="";show("welcome")}
+});
+
+if(S.name&&S.period)renderHome();else show("welcome");
+</script>
+</body>
+</html>
